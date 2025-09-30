@@ -1,15 +1,16 @@
-    <!doctype html>
-    <html>
+<!doctype html>
+<html>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style></style>
+        <style>
+        </style>
     </head>
     <body class="bg-gray-900 text-white min-h-screen">
-        <!-- Login View -->
-        <div id="login-view" class="min-h-screen flex items-center justify-center">
+        <!-- Home View -->
+        <div id="home-view" class="min-h-screen flex items-center justify-center">
             <div class="max-w-md w-full space-y-8 p-8">
                 <div>
                     <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-600">
@@ -27,6 +28,7 @@
                     <span class="block sm:inline" id="error-text"></span>
                 </div>
 
+                <!-- Login View -->
                 <form class="mt-10 space-y-10" id="login-form">
                     <div class="rounded-md shadow-sm space-y-3">
                         <div>
@@ -68,5 +70,86 @@
                         </p>
                     </div>
                 </form>
+
+                <!-- Registration Form -->
+                <form class="mt-10 space-y-10 hidden" id="register-form">
+                    <div class="rounded-md shadow-sm space-y-3">
+                        <div>
+                            <label for="reg-username" class="sr-only">Username</label>
+                            <input id="reg-username" name="username" type="text" required
+                                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                placeholder="Username">
+                        </div>
+                        <div>
+                            <label for="reg-password" class="sr-only">Password</label>
+                            <input id="reg-password" name="password" type="password" required
+                                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                placeholder="Password (min. 6 characters)">
+                        </div>
+                        <div>
+                            <label for="reg-confirm-password" class="sr-only">Confirm Password</label>
+                            <input id="reg-confirm-password" name="confirmPassword" type="password" required
+                                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-gray-900 rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                placeholder="Confirm Password">
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="register-btn"
+                                class="cursor-pointer group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50">
+                            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <i class="fas fa-user-plus text-green-500 group-hover:text-green-400"></i>
+                            </span>
+                            <span id="register-text">Create Account</span>
+                            <span id="register-loading" class="hidden">
+                                <i class="fas fa-spinner fa-spin"></i> Creating Account...
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-sm text-gray-400">
+                            Already have an account?
+                            <button type="button" id="show-login" class="cursor-pointer text-blue-400 hover:text-blue-300 underline">
+                                Sign in here
+                            </button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="app-container" class="hidden">
+        <!-- Navigation -->
+            <nav class="bg-gray-800 border-b border-gray-700">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fab fa-docker text-2xl text-blue-500"></i>
+                                <span class="ml-2 text-xl font-bold">Docker Manager</span>
+                            </div>
+                            <div class="hidden md:block ml-10">
+                                <div class="flex items-baseline space-x-4">
+                                    <a href="#" data-view="dashboard" class="nav-link bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                                    <a href="#" data-view="containers" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Containers</a>
+                                    <a href="#" data-view="images" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Images</a>
+                                    <a href="#" data-view="volumes" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Volumes</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-300 mr-4" id="user-info"></span>
+                            <button id="logout-btn" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/utilities.js"></script>
     </body>
-    </html>
+</html>

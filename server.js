@@ -17,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/health', (req, res) => {
     try {

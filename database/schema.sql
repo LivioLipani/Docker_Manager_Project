@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 INSERT INTO users (username, password_hash, role)
-VALUES ('admin', '$2b$10$rOq7YPz8qXqYKX8YK8KxMe8QHqYxKzXBFjl6QjKzO8YPm6zBZzJHy', 'admin')
+VALUES ('admin', '$2b$10$0qALTKZux4Uulda6mN6q6.BEgQvjNTWtB5IZIKcAvYOfPLPswiSpa', 'admin')
 ON CONFLICT (username) DO NOTHING;
