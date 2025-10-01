@@ -1,8 +1,13 @@
-const errorMessage = document.getElementById("error-message");
-const errorText = document.getElementById("error-text");
 const loginBtn = document.getElementById("login-btn");
 const loginText = document.getElementById("login-text");
 const loginLoading = document.getElementById("login-loading");
+
+const registerBtn = document.getElementById("register-btn");
+const registerText = document.getElementById("register-text");
+const registerLoading = document.getElementById("register-loading");
+
+const errorMessage = document.getElementById("error-message")
+const errorText = document.getElementById("error-text");
 
 const showRegister = document.getElementById("show-register");
 const showLogin = document.getElementById("show-login");
@@ -27,7 +32,7 @@ function hideError() {
   errorMessage.classList.add("hidden");
 }
 
-function setLoading(loading) {
+function setLoadingLogin(loading) {
   if (loading) {
     loginBtn.disabled = true;
     loginText.classList.add("hidden");
@@ -39,13 +44,24 @@ function setLoading(loading) {
   }
 }
 
+function setLoadingRegister(loading) {
+  if (loading) {
+    registerBtn.disabled = true;
+    registerText.classList.add("hidden");
+    registerLoading.classList.remove("hidden");
+  } else {
+    registerBtn.disabled = false;
+    registerText.classList.remove("hidden");
+    registerLoading.classList.add("hidden");
+  }
+}
+
 loginBtn.addEventListener("click", async function (e) {
     e.preventDefault();
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
-    console.log(username, password);
     hideError();
-    setLoading(true);
+    setLoadingLogin(true);
 
     try {
         const response = await fetch("/api/auth/login", {
@@ -71,7 +87,43 @@ loginBtn.addEventListener("click", async function (e) {
         showError("Errore di connessione al server");
         console.error(error);
     }finally {
-        setLoading(false);
+        setLoadingLogin(false);
+    }
+});
+
+registerBtn.addEventListener("click", async function (e) {
+    e.preventDefault();
+    const username = document.getElementById("reg-username").value;
+    const password = document.getElementById("reg-password").value;
+    const confirmPassword = document.getElementById("reg-confirm-password").value;
+    hideError();
+    setLoadingRegister(true);
+
+    try {
+        const response = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password, confirmPassword }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            AuthManager.setToken(data.token);
+            AuthManager.setUser(data.user);
+            
+            changeView("home-view", "app-container");
+
+            //connect the socket
+            socket = socketManager.connect();
+        } else {
+            showError(data.error || "Register failed");
+        }
+    }catch (error) {
+        showError("Errore di connessione al server");
+        console.error(error);
+    }finally {
+        setLoadingRegister(false);
     }
 });
 
@@ -104,7 +156,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     'authorization': `Bearer ${token}`
                 }
             });
-            console.log(response);
             if (response.ok) {
                 const data = await response.json();
                 if (data.valid) {

@@ -51,12 +51,51 @@ const verify_token = (req, res) => {
   });
 };
 
-const logout = (_, res) => {
+const logout = (req, res) => {
   res.json({ message: 'Logged out successfully' });
 };
+
+const register = async (req, res) => {
+  try {
+    const { username, password, confirmPassword } = req.body;
+
+    if (!username || !password || !confirmPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    const existingUser = await User.findByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+
+    const newUser = await User.create(username, password, 'readonly');
+    const token = generateToken(newUser.id);
+
+    res.status(201).json({
+      token,
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        role: newUser.role
+      }
+    });
+  }catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 module.exports = {
   login,
   verify_token,
-  logout
+  logout,
+  register
 };

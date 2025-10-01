@@ -2,6 +2,20 @@ const pool = require('../database_config/db');
 const bcrypt = require('bcrypt');
 
 class User {
+    static async create(username, password, role) {
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(password, saltRounds);
+
+        const query = `
+        INSERT INTO users (username, password_hash, role)
+        VALUES ($1, $2, $3)
+        RETURNING id, username, role, created_at
+        `;
+
+        const result = await pool.query(query, [username, passwordHash, role]);
+        return result.rows[0];
+    }
+
     static async getAll() {
         const query = 'SELECT id, username, role, created_at FROM users ORDER BY created_at DESC';
         const result = await pool.query(query);
