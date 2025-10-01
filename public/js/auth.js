@@ -1,4 +1,3 @@
-const loginForm = document.getElementById("login-form");
 const errorMessage = document.getElementById("error-message");
 const errorText = document.getElementById("error-text");
 const loginBtn = document.getElementById("login-btn");
@@ -7,6 +6,10 @@ const loginLoading = document.getElementById("login-loading");
 
 const showRegister = document.getElementById("show-register");
 const showLogin = document.getElementById("show-login");
+
+const logoutBtn = document.getElementById("logout-btn");
+
+let socket = null;
 
 function showError(message) {
   errorText.textContent = message;
@@ -36,13 +39,11 @@ function setLoading(loading) {
   }
 }
 
-loginForm.addEventListener("submit", async function (e) {
+loginBtn.addEventListener("click", async function (e) {
     e.preventDefault();
-
-    const formData = new FormData(loginForm);
-    const username = formData.get("username");
-    const password = formData.get("password");
-
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    console.log(username, password);
     hideError();
     setLoading(true);
 
@@ -60,6 +61,9 @@ loginForm.addEventListener("submit", async function (e) {
             AuthManager.setUser(data.user);
             
             changeView("home-view", "app-container");
+
+            //connect the socket
+            socket = socketManager.connect();
         } else {
             showError(data.error || "Login failed");
         }
@@ -72,9 +76,48 @@ loginForm.addEventListener("submit", async function (e) {
 });
 
 showRegister.addEventListener("click", () => {
-    changeView("login-form", "register-form");
+  changeView("login-form", "register-form");
 })
 
 showLogin.addEventListener("click", () => {
-    changeView("register-form", "login-form");
+  changeView("register-form", "login-form");
 })
+
+logoutBtn.addEventListener('click', () => {
+  AuthManager.removeToken();
+  AuthManager.removeUser();
+  socketManager.disconnect;
+
+  changeView("app-container", "home-view");
+})
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = AuthManager.getToken();
+    
+    if (token) {
+        try {
+            // Verifica se il token è ancora valido
+            const response = await fetch('/api/auth/verify_token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `Bearer ${token}`
+                }
+            });
+            console.log(response);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.valid) {
+                    // Token valido, reindirizza alla dashboard
+                    changeView("home-view", "app-container");
+                }
+            } else {
+                // Token non valido o scaduto, rimuovilo
+                AuthManager.removeToken();
+            }
+        } catch (error) {
+            console.error('Errore nella verifica del token:', error);
+            AuthManager.removeToken();
+        }
+    }
+});

@@ -42,9 +42,21 @@ const login = async(req, res) => {
     console.log('Login error:', error);
     res.status(500).json({error: 'Server error'});
   }
-
 }
 
+const verify_token = (req, res) => {
+  res.json({
+    valid: true, 
+    user: req.user 
+  });
+};
+
+const logout = (_, res) => {
+  res.json({ message: 'Logged out successfully' });
+};
+
 module.exports = {
-  login
+  login,
+  verify_token,
+  logout
 };

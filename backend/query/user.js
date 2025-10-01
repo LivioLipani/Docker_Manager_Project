@@ -17,6 +17,12 @@ class User {
     static async verifyPassword(plainPassword, hashedPassword) {
         return bcrypt.compare(plainPassword, hashedPassword);
     }
+
+    static async findById(id) {
+        const query = 'SELECT id, username, role, created_at FROM users WHERE id = $1';
+        const result = await pool.query(query, [id]);
+        return result.rows[0];
+    }
 }
 
 module.exports = User;

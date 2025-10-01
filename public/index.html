@@ -29,16 +29,14 @@
                 </div>
 
                 <!-- Login View -->
-                <form class="mt-10 space-y-10" id="login-form">
+                <div class="mt-10 space-y-10" id="login-form">
                     <div class="rounded-md shadow-sm space-y-3">
                         <div>
-                            <label for="username" class="sr-only">Username</label>
                             <input id="username" name="username" type="text" required
                                 class="appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder="Username">
                         </div>
                         <div>
-                            <label for="password" class="sr-only">Password</label>
                             <input id="password" name="password" type="password" required
                                 class="appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder="Password">
@@ -69,25 +67,22 @@
                             </button>
                         </p>
                     </div>
-                </form>
+                </div>
 
                 <!-- Registration Form -->
-                <form class="mt-10 space-y-10 hidden" id="register-form">
+                <div class="mt-10 space-y-10 hidden" id="register-form">
                     <div class="rounded-md shadow-sm space-y-3">
                         <div>
-                            <label for="reg-username" class="sr-only">Username</label>
                             <input id="reg-username" name="username" type="text" required
                                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder="Username">
                         </div>
                         <div>
-                            <label for="reg-password" class="sr-only">Password</label>
                             <input id="reg-password" name="password" type="password" required
                                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder="Password (min. 6 characters)">
                         </div>
                         <div>
-                            <label for="reg-confirm-password" class="sr-only">Confirm Password</label>
                             <input id="reg-confirm-password" name="confirmPassword" type="password" required
                                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-gray-900 rounded-t-md rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder="Confirm Password">
@@ -115,7 +110,7 @@
                             </button>
                         </p>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -140,7 +135,7 @@
                         </div>
                         <div class="flex items-center">
                             <span class="text-gray-300 mr-4" id="user-info"></span>
-                            <button id="logout-btn" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium">
+                            <button id="logout-btn" class="cursor-pointer bg-red-500 hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium">
                                 <i class="fas fa-sign-out-alt mr-1"></i> Logout
                             </button>
                         </div>
@@ -150,6 +145,7 @@
         </div>
         <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
         <script src="js/auth.js"></script>
-        <script src="js/utilities.js"></script>
+        <script src="js/socketManager.js"></script>
+        <script src="js/authManager.js"></script>
     </body>
 </html>

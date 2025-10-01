@@ -27,4 +27,13 @@ class AuthManager {
     static isAuthenticated() {
         return !!this.getToken();
     }
+
+    static logout() {
+        this.removeToken();
+        this.removeUser();
+        // Let the app router handle logout instead of redirecting
+        if (window.appRouter) {
+            window.appRouter.logout();
+        }
+    }
 }
