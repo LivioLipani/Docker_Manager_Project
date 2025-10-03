@@ -34,6 +34,26 @@ class SocketManager {
         
         return this.socket;
     }
+
+    disconnect() {
+        if (this.socket) {
+            this.socket.disconnect();
+            this.socket = null;
+            this.connected = false;
+        }
+    }
+
+    emit(event, data) {
+        if (this.socket && this.connected) {
+            this.socket.emit(event, data);
+        }
+    }
+
+    on(event, callback) {
+        if (this.socket) {
+            this.socket.on(event, callback);
+        }
+    }
 }
 
 const socketManager = new SocketManager();

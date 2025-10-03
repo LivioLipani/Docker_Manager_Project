@@ -14,8 +14,6 @@ const showLogin = document.getElementById("show-login");
 
 const logoutBtn = document.getElementById("logout-btn");
 
-let socket = null;
-
 function showError(message) {
   errorText.textContent = message;
   errorMessage.classList.remove("hidden");
@@ -79,7 +77,8 @@ loginBtn.addEventListener("click", async function (e) {
             changeView("home-view", "app-container");
 
             //connect the socket
-            socket = socketManager.connect();
+            socketManager.connect();
+            chartManager.init(); 
         } else {
             showError(data.error || "Login failed");
         }
@@ -115,7 +114,8 @@ registerBtn.addEventListener("click", async function (e) {
             changeView("home-view", "app-container");
 
             //connect the socket
-            socket = socketManager.connect();
+            socketManager.connect();
+            chartManager.init(); 
         } else {
             showError(data.error || "Register failed");
         }
@@ -138,14 +138,14 @@ showLogin.addEventListener("click", () => {
 logoutBtn.addEventListener('click', () => {
   AuthManager.removeToken();
   AuthManager.removeUser();
-  socketManager.disconnect;
+  socketManager.disconnect();
 
   changeView("app-container", "home-view");
 })
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = AuthManager.getToken();
-    
+
     if (token) {
         try {
             // Verifica se il token è ancora valido
@@ -160,7 +160,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
                 if (data.valid) {
                     // Token valido, reindirizza alla dashboard
+                    socketManager.connect();
                     changeView("home-view", "app-container");
+                    chartManager.init(); 
                 }
             } else {
                 // Token non valido o scaduto, rimuovilo

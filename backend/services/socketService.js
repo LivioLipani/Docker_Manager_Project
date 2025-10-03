@@ -44,7 +44,31 @@ class SocketService{
                 console.log(`User ${socket.user.username} disconnected`);
                 this.authenticatedSockets.delete(socket.id);
             });
+
+            socket.on('subscribe_container_stats', (containerId) => {
+                this.subscribeToContainerStats(socket, containerId);
+            });
         });
+    }
+
+    subscribeToContainerStats(socket, containerId) {
+    const intervalKey = `${socket.id}_container_${containerId}`;
+
+    if (this.statsIntervals.has(intervalKey)) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+        try {
+            const stats = await DockerService.getContainerStats(containerId);
+            socket.emit('container_stats', { containerId, stats });
+        } catch (error) {
+            socket.emit('container_stats_error', { containerId, error: error.message });
+            this.unsubscribeFromContainerStats(socket, containerId);
+        }
+        }, 2000);
+
+        this.statsIntervals.set(intervalKey, interval);
     }
 }
 

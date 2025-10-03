@@ -10,7 +10,11 @@ const path = require('path');
 
 const authRoutes = require('./backend/routes/auth');
 const userRoutes = require('./backend/routes/users');
+const containerRoutes = require('./backend/routes/containers');
+
 const socketService = require('./backend/services/socketService');
+const dockerService = require('./backend/services/dockerService');
+
 
 const app = express()
 const server = http.createServer(app);
@@ -25,17 +29,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/containers', containerRoutes);
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
     try {
+        const dockerConnected = await dockerService.testConnection();
         res.json({
             status: 'OK',
             timestamp: new Date().toISOString(),
+            docker: dockerConnected ? 'Connected' : 'Disconnected'
         });
     } catch (error) {
         res.status(500).json({
             status: 'ERROR',
             timestamp: new Date().toISOString(),
+            docker: 'Error',
             error: error.message
         });
     }
@@ -43,7 +51,10 @@ app.get('/health', (req, res) => {
 
 const socket = new socketService(io);
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log(`Docker Manager Server running on port: ${PORT}`);
     console.log(`Health check:  http://localhost:${PORT}/health`);
+
+    const dockerConnected = await dockerService.testConnection();
+    console.log(`Docker: ${dockerConnected ? 'Connected' : 'Disconnected'}`);
 });
