@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>       
     </head>
     <body class="bg-gray-900 text-white min-h-screen">
         <!-- Home View -->
@@ -144,7 +144,7 @@
 
             <!--Home view-->
             <div id="dashboard-view" class="">
-                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                     <div class="px-4 py-6 sm:px-0">
                         <h1 class="text-3xl font-bold text-white mb-8">Dashboard</h1>
 
@@ -255,14 +255,131 @@
                             </div>
                         </div>
                     </div>
-                </main>
+                </div>
+            </div>
+            <!--Volume View-->
+            <div id="volumes-view" class="hidden">
+                <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div class="px-4 py-6 sm:px-0">
+                        <div class="flex justify-between items-center mb-8">
+                            <h1 class="text-3xl font-bold text-white">Volumes</h1>
+                            <button id="create-volume-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-plus mr-2"></i>Create Volume
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-800 shadow overflow-hidden sm:rounded-md">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr class="border-b border-gray-700">
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Driver</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Mount Point</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="volumes-table" class="divide-y divide-gray-700">
+                                            <tr>
+                                                <td colspan="5" class="px-6 py-4 text-center text-gray-400">
+                                                    <i class="fas fa-spinner fa-spin mr-2"></i>Loading volumes...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Container View-->
+            <div id="containers-view" class="hidden">
+                <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div class="px-4 py-6 sm:px-0">
+                        <div class="flex justify-between items-center mb-8">
+                            <h1 class="text-3xl font-bold text-white">Containers</h1>
+                            <button id="create-container-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-plus mr-2"></i>Create Container
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-800 shadow overflow-hidden sm:rounded-md">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr class="border-b border-gray-700">
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Image</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Ports</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="containers-table" class="divide-y divide-gray-700">
+                                            <tr>
+                                                <td colspan="6" class="px-6 py-4 text-center text-gray-400">
+                                                    <i class="fas fa-spinner fa-spin mr-2"></i>Loading containers...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Images View -->
+            <div id="images-view" class="hidden">
+                <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div class="px-4 py-6 sm:px-0">
+                        <div class="flex justify-between items-center mb-8">
+                            <h1 class="text-3xl font-bold text-white">Images</h1>
+                            <button id="pull-image-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-download mr-2"></i>Pull Image
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-800 shadow overflow-hidden sm:rounded-md">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr class="border-b border-gray-700">
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Repository:Tag</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Image ID</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Size</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="images-table" class="divide-y divide-gray-700">
+                                            <tr>
+                                                <td colspan="5" class="px-6 py-4 text-center text-gray-400">
+                                                    <i class="fas fa-spinner fa-spin mr-2"></i>Loading images...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
         <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
         <script src="js/auth.js"></script>
         <script src="js/socketManager.js"></script>
         <script src="js/chartManager.js"></script>
         <script src="js/authManager.js"></script>
+        <script src="js/navigator.js"></script>
     </body>
 </html>
