@@ -1,5 +1,13 @@
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
 class ChartManager{
+
     constructor() {
         this.socket = null;
         this.containerStatusChart = null;
@@ -109,6 +117,7 @@ class ChartManager{
         document.getElementById('running-containers').textContent = stats.containers.running;
         document.getElementById('total-images').textContent = stats.images;
         document.getElementById('total-volumes').textContent = stats.volumes;
+        document.getElementById('system-status').innerHTML = '<span class="text-green-500">Online</span>';
 
         const statusCounts = {
             running: stats.containers.running,
@@ -176,7 +185,13 @@ class ChartManager{
 
     async getContainers() {
         try {
-            const response = await fetch('/api/containers');
+            const response = await fetch('/api/containers', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${AuthManager.getToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -193,7 +208,13 @@ class ChartManager{
 
     async getImages() {
         try {
-            const response = await fetch('/api/images');
+            const response = await fetch('/api/images', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${AuthManager.getToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -210,7 +231,13 @@ class ChartManager{
 
     async getVolumes() {
         try {
-            const response = await fetch('/api/volumes');
+            const response = await fetch('/api/volumes', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${AuthManager.getToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -248,7 +275,7 @@ class ChartManager{
                 }
             };
 
-            //this.updateInfo(initialStats);
+            this.updateInfo(initialStats);
         } catch (error) {
             console.error('Failed to load initial data:', error);
             //NotificationManager.error('Failed to load dashboard data');

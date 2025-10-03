@@ -16,7 +16,6 @@ try {
     }
 }
 
-
 class DockerService {
     static async testConnection() {
         try {
@@ -101,6 +100,7 @@ class DockerService {
             if (stats.cpu_stats && stats.precpu_stats &&
                 stats.cpu_stats.cpu_usage && stats.precpu_stats.cpu_usage &&
                 stats.cpu_stats.system_cpu_usage && stats.precpu_stats.system_cpu_usage) {
+
                 const cpuStats = stats.cpu_stats;
                 const preCpuStats = stats.precpu_stats;
                 const systemCpuDelta = cpuStats.system_cpu_usage - preCpuStats.system_cpu_usage;

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const containerController = require('../controllers/containerController');
+const imageController = require('../controllers/imageController');
 const { authenticateToken } = require('../middleware/auth');
 
-router.get('/', authenticateToken, containerController.getImages);
+router.get('/', authenticateToken, imageController.getImages);
 
 module.exports = router;
