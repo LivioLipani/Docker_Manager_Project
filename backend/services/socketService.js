@@ -46,6 +46,7 @@ class SocketService{
             socket.on('disconnect', () => {
                 console.log(`User ${socket.user.username} disconnected`);
                 this.authenticatedSockets.delete(socket.id);
+                this.cleanupSocketSubscriptions(socket);
             });
 
             socket.on('subscribe_system_stats', () => {
@@ -163,6 +164,23 @@ class SocketService{
             clearInterval(interval);
             this.statsIntervals.delete(intervalKey);
         }
+    }
+
+    cleanupSocketSubscriptions(socket) {
+        const socketsToClean = [];
+        for (const [key] of this.statsIntervals) {
+            if (key.startsWith(socket.id)) {
+                socketsToClean.push(key);
+            }
+        }
+
+        socketsToClean.forEach(key => {
+            const interval = this.statsIntervals.get(key);
+            if (interval) {
+                clearInterval(interval);
+                this.statsIntervals.delete(key);
+            }
+        });
     }
     
 }

@@ -69,7 +69,7 @@ class VolumesManager {
                 <td class="px-6 py-4 text-sm text-gray-300">${volume.mountpoint}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.created ? formatDateTime(volume.created) : 'N/A'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button onclick="volumesManager.removeVolume('${volume.name}')" class="text-red-400 hover:text-red-300" title="Remove">
+                    <button onclick="volumesManager.removeVolume('${volume.name}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -81,7 +81,7 @@ class VolumesManager {
         showDeleteConfirmation(
             `Are you sure you want to remove volume "${name}"? This action cannot be undone.`,
             async () => {
-                apiManager.remove(`/api/volumes/${name}?force=true`);
+                await apiManager.remove(`/api/volumes/${name}?force=true`);
                 this.loadVolumes();
             }
         );
@@ -92,8 +92,55 @@ const volumesManager = new VolumesManager();
 
 class ImagesManager {
 
-    async loadImages(){
+    async loadImages() {
+        try {
+            const images = await apiManager.get('/api/images');
+            this.displayImages(images);
+        } catch (error) {
+            console.error('Failed to load images:', error);
+        }
+    }
 
+    displayImages(images) {
+        const tbody = document.getElementById('images-table');
+        if (images.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-400">No images found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = images.map(image => `
+            <tr class="hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${image.tags[0]}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${image.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatBytes(image.size)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(image.created)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                        <button onclick="imagesManager.runImage('${image.id}')" class="cursor-pointer text-green-400 hover:text-green-300" title="Run">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button onclick="imagesManager.removeImage('${image.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async removeImage(id) {
+        showDeleteConfirmation(
+            'Are you sure you want to remove this image? This action cannot be undone.',
+            async () => {
+                await apiManager.remove(`/api/images/${id}?force=true`);
+                this.loadImages();
+            }
+        );
+    }
+
+    runImage(id) {
+
+        
     }
 
 }

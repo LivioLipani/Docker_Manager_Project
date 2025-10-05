@@ -1,7 +1,9 @@
-const loginBtn = document.getElementById("login-btn");
+const loginForm = document.getElementById("login-form");
+const loginBtn = document.getElementById('login-btn');
 const loginText = document.getElementById("login-text");
 const loginLoading = document.getElementById("login-loading");
 
+const registerForm = document.getElementById("register-form");
 const registerBtn = document.getElementById("register-btn");
 const registerText = document.getElementById("register-text");
 const registerLoading = document.getElementById("register-loading");
@@ -54,10 +56,13 @@ function setLoadingRegister(loading) {
   }
 }
 
-loginBtn.addEventListener("click", async function (e) {
+loginForm.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const formData = new FormData(e.target);
+    const credentials = {
+      username: formData.get('username'),
+      password: formData.get('password')
+    };
     hideError();
     setLoadingLogin(true);
 
@@ -65,7 +70,7 @@ loginBtn.addEventListener("click", async function (e) {
         const response = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify(credentials),
         });
 
         const data = await response.json();
@@ -79,7 +84,6 @@ loginBtn.addEventListener("click", async function (e) {
             //connect the socket
             socketManager.connect();
             chartManager.init(); 
-            bindCreateButtons();
         } else {
             showError(data.error || "Login failed");
         }
@@ -91,11 +95,14 @@ loginBtn.addEventListener("click", async function (e) {
     }
 });
 
-registerBtn.addEventListener("click", async function (e) {
+registerForm.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const username = document.getElementById("reg-username").value;
-    const password = document.getElementById("reg-password").value;
-    const confirmPassword = document.getElementById("reg-confirm-password").value;
+    const formData = new FormData(e.target);
+    const registrationData = {
+      username: formData.get('username'),
+      password: formData.get('password'),
+      confirmPassword: formData.get('confirmPassword')
+    };
     hideError();
     setLoadingRegister(true);
 
@@ -103,7 +110,7 @@ registerBtn.addEventListener("click", async function (e) {
         const response = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password, confirmPassword }),
+            body: JSON.stringify(registrationData),
         });
 
         const data = await response.json();
@@ -116,8 +123,7 @@ registerBtn.addEventListener("click", async function (e) {
 
             //connect the socket
             socketManager.connect();
-            chartManager.init(); 
-            bindCreateButtons()
+            chartManager.init();
         } else {
             showError(data.error || "Register failed");
         }

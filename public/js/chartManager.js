@@ -209,7 +209,6 @@ class ChartManager{
             this.updateInfo(initialStats);
         } catch (error) {
             console.error('Failed to load initial data:', error);
-            //NotificationManager.error('Failed to load dashboard data');
         }
     }
 }

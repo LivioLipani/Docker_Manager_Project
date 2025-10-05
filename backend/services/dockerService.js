@@ -74,6 +74,32 @@ class DockerService {
         }
     }
 
+    static async pullImage(imageName, onProgress) {
+        try {
+            const stream = await docker.pull(imageName);
+            return new Promise((resolve, reject) => {
+                docker.modem.followProgress(stream, (err, res) => {
+                if (err) reject(err);
+                else resolve(res);
+                }, onProgress);
+            });
+        } catch (error) {
+            console.error('Failed to pull image:', error);
+            throw error;
+        }
+    }
+
+    static async removeImage(id, force = false) {
+        try {
+            const image = docker.getImage(id);
+            await image.remove({ force });
+            return { success: true, message: 'Image removed successfully' };
+        } catch (error) {
+            console.error('Failed to remove image:', error);
+        throw error;
+        }
+    }
+
     static async getVolumes() {
         try {
             const result = await docker.listVolumes();
