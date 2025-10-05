@@ -1,6 +1,6 @@
 const DockerService = require('../services/dockerService');
 
-const getContainers = async (_, res) => {
+const getContainers = async (req, res) => {
   try {
     const containers = await DockerService.getContainers();
     res.json(containers);
@@ -9,6 +9,7 @@ const getContainers = async (_, res) => {
     res.status(500).json({ error: 'Failed to retrieve containers' });
   }
 };
+
 
 module.exports = {
   getContainers

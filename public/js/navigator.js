@@ -41,14 +41,62 @@ const navigateTo = (target) => {
             loadContainers();
             break;
         case "images":
-            loadImages();
+            imagesManager.loadImages();
             break;
         case "volumes":
-            loadVolumes();
+            volumesManager.loadVolumes();
             break;
     }
 }
 
-const loadVolumes = () => {
+// Create volume button
+document.getElementById('create-volume-btn').addEventListener('click', () => {
+    showCreateVolumeModal();
+});
 
+// Form submission handlers
+document.getElementById('create-volume-form').addEventListener('submit', handleCreateVolume);
+
+//modal element Volume
+function showCreateVolumeModal() {
+    document.getElementById('create-volume-modal').classList.remove('hidden');
 }
+
+function closeCreateVolumeModal() {
+    document.getElementById('create-volume-modal').classList.add('hidden');
+    document.getElementById('create-volume-form').reset();
+}
+
+async function handleCreateVolume(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Volume...';
+
+    const volumeData = {
+        name: formData.get('name'),
+        driver: formData.get('driver')
+    };
+
+    try {
+        apiManager.create('/api/volumes', volumeData);
+        //NotificationManager.success('Volume created successfully');
+        closeCreateVolumeModal();
+        if (volumesManager) {
+            volumesManager.loadVolumes();
+        }
+    } catch (error) {
+        console.error('Failed to create volume: ' + error.message);
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+

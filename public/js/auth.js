@@ -79,6 +79,7 @@ loginBtn.addEventListener("click", async function (e) {
             //connect the socket
             socketManager.connect();
             chartManager.init(); 
+            bindCreateButtons();
         } else {
             showError(data.error || "Login failed");
         }
@@ -116,6 +117,7 @@ registerBtn.addEventListener("click", async function (e) {
             //connect the socket
             socketManager.connect();
             chartManager.init(); 
+            bindCreateButtons()
         } else {
             showError(data.error || "Register failed");
         }

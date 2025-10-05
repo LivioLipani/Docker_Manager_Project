@@ -89,6 +89,31 @@ class DockerService {
             throw error;
         }
     }
+
+    static async createVolume(name, driver = 'local') {
+        try {
+        const volume = await docker.createVolume({ Name: name, Driver: driver });
+        return {
+            name: volume.Name,
+            success: true,
+            message: 'Volume created successfully'
+        };
+        } catch (error) {
+            console.error('Failed to create volume:', error);
+            throw error;
+        }
+    }
+
+    static async removeVolume(name, force = false) {
+        try {
+            const volume = docker.getVolume(name);
+            await volume.remove({ force });
+            return { success: true, message: 'Volume removed successfully' };
+        } catch (error) {
+            console.error('Failed to remove volume:', error);
+            throw error;
+        }
+    }
     
     static async getContainerStats(id) {
         try {

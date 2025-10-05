@@ -183,81 +183,12 @@ class ChartManager{
         this.socket.emit('subscribe_system_stats');
     }
 
-    async getContainers() {
-        try {
-            const response = await fetch('/api/containers', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${AuthManager.getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data;
-            
-        } catch (error) {
-            console.error('Error fetching containers:', error);
-            return [];
-        }
-    }
-
-    async getImages() {
-        try {
-            const response = await fetch('/api/images', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${AuthManager.getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data;
-            
-        } catch (error) {
-            console.error('Error fetching images:', error);
-            return [];
-        }
-    }
-
-    async getVolumes() {
-        try {
-            const response = await fetch('/api/volumes', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${AuthManager.getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data;
-            
-        } catch (error) {
-            console.error('Error fetching volumes:', error);
-            return [];
-        }
-    }
-
     async loadInitialData() {
         try {
             const [containers, images, volumes] = await Promise.all([
-                this.getContainers(),
-                this.getImages(),
-                this.getVolumes()
+                apiManager.get('/api/containers'),
+                apiManager.get('/api/images'),
+                apiManager.get('/api/volumes')
             ]);
 
             const runningContainers = containers.filter(c => c.state === 'running').length;
