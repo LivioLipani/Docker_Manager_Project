@@ -51,36 +51,29 @@ const navigateTo = (target) => {
 
 // Create volume button
 document.getElementById('create-volume-btn').addEventListener('click', () => {
-    showCreateVolumeModal();
+    showModal('create-volume-modal');
 });
 
 // Pull image button
 document.getElementById('pull-image-btn').addEventListener('click', () => {
-    showPullImageModal();
+    showModal('pull-image-modal');
 });
 
 // Form submission handlers
 document.getElementById('create-volume-form').addEventListener('submit', handleCreateVolume);
 document.getElementById('pull-image-form').addEventListener('submit', handlePullImage);
+document.getElementById('run-image-form').addEventListener('submit', handleRunImage);
+
 
 
 //Modal Functions
-function showCreateVolumeModal() {
-    document.getElementById('create-volume-modal').classList.remove('hidden');
+function showModal(target) {
+    document.getElementById(target).classList.remove('hidden');
 }
 
-function closeCreateVolumeModal() {
-    document.getElementById('create-volume-modal').classList.add('hidden');
-    document.getElementById('create-volume-form').reset();
-}
-
-function showPullImageModal() {
-    document.getElementById('pull-image-modal').classList.remove('hidden');
-}
-
-function closePullImageModal() {
-    document.getElementById('pull-image-modal').classList.add('hidden');
-    document.getElementById('pull-image-form').reset();
+function closeModal(target, form){
+    document.getElementById(target).classList.add('hidden');
+    if(form != '') document.getElementById(form).reset();
 }
 
 function showPullProgressModal(imageName) {
@@ -90,10 +83,6 @@ function showPullProgressModal(imageName) {
     document.getElementById('pull-progress-log').innerHTML = '';
     document.getElementById('pull-progress-close-btn').disabled = true;
     document.getElementById('pull-progress-modal').classList.remove('hidden');
-}
-
-function closePullProgressModal() {
-    document.getElementById('pull-progress-modal').classList.add('hidden');
 }
 
 //Handle functions
@@ -115,7 +104,7 @@ async function handleCreateVolume(e) {
 
     try {
         apiManager.create('/api/volumes', volumeData);
-        closeCreateVolumeModal();
+        closeModal('create-volume-modal', 'create-volume-form');
         if (volumesManager) {
             volumesManager.loadVolumes();
         }
@@ -163,7 +152,7 @@ async function handlePullImage(e) {
 
     try {
         // Close the pull image modal and show progress modal
-        closePullImageModal();
+        closeModal('pull-image-modal', 'pull-image-form');
         showPullProgressModal(imageData.imageName);
 
         // Use streaming fetch for real-time updates
@@ -219,4 +208,55 @@ async function handlePullImage(e) {
     }
 }
 
+function removeRunInput(button) {
+    button.parentElement.remove();
+}
 
+function addRunPortMapping() {
+    const container = document.getElementById('run-port-mappings');
+    const div = document.createElement('div');
+    div.className = 'flex space-x-2 mb-2';
+    div.innerHTML = `
+        <input type="text" name="host-port" placeholder="Host Port"
+               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <span class="self-center text-gray-300">:</span>
+        <input type="text" name="container-port" placeholder="Container Port"
+               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <button type="button" onclick="removeRunInput(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
+    `;
+    container.appendChild(div);
+}
+
+function addRunEnvVar() {
+    const container = document.getElementById('run-env-vars');
+    const div = document.createElement('div');
+    div.className = 'flex space-x-2 mb-2';
+    div.innerHTML = `
+        <input type="text" name="env-key" placeholder="KEY"
+               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <span class="self-center text-gray-300">=</span>
+        <input type="text" name="env-value" placeholder="value"
+               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <button type="button" onclick="removeRunInput(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
+    `;
+    container.appendChild(div);
+}
+
+function addRunVolume() {
+    const container = document.getElementById('run-volumes');
+    const div = document.createElement('div');
+    div.className = 'flex space-x-2 mb-2';
+    div.innerHTML = `
+        <input type="text" name="host-volume" placeholder="Host Path"
+               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <span class="self-center text-gray-300">:</span>
+        <input type="text" name="container-volume" placeholder="Container Path"
+               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <button type="button" onclick="removeRunInput(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
+    `;
+    container.appendChild(div);
+}
+
+async function handleRunImage(e){
+
+}

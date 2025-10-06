@@ -138,9 +138,18 @@ class ImagesManager {
         );
     }
 
-    runImage(id) {
+    showRunImageModal(imageId) {
+        document.getElementById('run-image-id').value = imageId;
+        document.getElementById('run-image-modal').classList.remove('hidden');
+    }
 
-        
+    closeRunImageModal() {
+        document.getElementById('run-image-modal').classList.add('hidden');
+        document.getElementById('run-image-form').reset();
+    }
+
+    runImage(id) {
+        this.showRunImageModal(id);
     }
 
 }
