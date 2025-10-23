@@ -67,7 +67,7 @@ class VolumesManager {
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${volume.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.driver}</td>
                 <td class="px-6 py-4 text-sm text-gray-300">${volume.mountpoint}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.postd ? formatDateTime(volume.postd) : 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.created ? formatDateTime(volume.created) : 'N/A'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button onclick="volumesManager.removeVolume('${volume.name}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                         <i class="fas fa-trash"></i>
@@ -179,7 +179,7 @@ class ContainerManager{
                     </span>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-300">${this.formatPorts(container.ports)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(container.postd)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(container.created)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
                         ${container.state === 'running' ?

@@ -22,6 +22,7 @@ class SocketManager {
         this.socket.on('disconnect', () => {
             this.connected = false;
             console.log('Disconnected from Socket.IO server');
+            document.getElementById('system-status').innerHTML = '<span class="text-red-500">Offline</span>';
         });
 
         this.socket.on('connect_error', (error) => {
