@@ -89,11 +89,6 @@ Before running this application, ensure you have the following installed:
    http://localhost:3000
    ```
 
-   For health check
-   ```
-   http://localhost:3000/health
-   ```
-
 ## Default Credentials
 
 - **Username**: `admin`
@@ -124,7 +119,6 @@ Before running this application, ensure you have the following installed:
 ### Images
 - `GET /api/images` - List all images
 - `POST /api/images/pull` - Pull an image from registry
-- `POST /api/images/:id/run` - Create and run container from image
 - `DELETE /api/images/:id` - Remove an image
 
 ### Volumes
