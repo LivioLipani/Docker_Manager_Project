@@ -41,7 +41,7 @@ class SocketService{
 
     setupEventHandlers() {
         this.io.on('connection', (socket) => {
-            console.log(`User ${socket.user.username} connected via Socket.IO`);
+            console.log(`User ${socket.user.username} connected via Socket`);
 
             socket.on('disconnect', () => {
                 console.log(`User ${socket.user.username} disconnected`);

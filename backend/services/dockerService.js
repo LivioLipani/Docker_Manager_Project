@@ -140,6 +140,65 @@ class DockerService {
             throw error;
         }
     }
+
+     static async startContainer(id) {
+        try {
+            const container = docker.getContainer(id);
+            await container.start();
+            return { success: true, message: 'Container started successfully' };
+        } catch (error) {
+            console.error('Failed to start container:', error);
+            throw error;
+        }
+    }
+
+    static async stopContainer(id) {
+        try {
+            const container = docker.getContainer(id);
+            await container.stop();
+            return { success: true, message: 'Container stopped successfully' };
+        } catch (error) {
+            console.error('Failed to stop container:', error);
+            throw error;
+        }
+    }
+
+    static async restartContainer(id) {
+        try {
+            const container = docker.getContainer(id);
+            await container.restart();
+        return { success: true, message: 'Container restarted successfully' };
+        } catch (error) {
+            console.error('Failed to restart container:', error);
+            throw error;
+        }
+    }
+
+  static async removeContainer(id, force = false) {
+    try {
+        const container = docker.getContainer(id);
+        await container.remove({ force });
+        return { success: true, message: 'Container removed successfully' };
+    } catch (error) {
+      console.error('Failed to remove container:', error);
+      throw error;
+    }
+  }
+
+  static async createContainer(options) {
+    try {
+        const container = await docker.createContainer(options);
+        return {
+            id: container.id.substring(0, 12),
+            fullId: container.id,
+            success: true,
+            message: 'Container created successfully'
+        };
+    } catch (error) {
+        console.error('Failed to create container:', error);
+        throw error;
+    }
+  }
     
     static async getContainerStats(id) {
         try {

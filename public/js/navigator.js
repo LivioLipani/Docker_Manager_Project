@@ -38,7 +38,7 @@ const navigateTo = (target) => {
 
     switch (target) {
         case "containers":
-            loadContainers();
+            containerManager.loadContainers();
             break;
         case "images":
             imagesManager.loadImages();
@@ -59,12 +59,15 @@ document.getElementById('pull-image-btn').addEventListener('click', () => {
     showModal('pull-image-modal');
 });
 
+//Create Container button
+document.getElementById('create-container-btn').addEventListener('click', () => {
+    showModal('create-container-modal');
+});
+
 // Form submission handlers
 document.getElementById('create-volume-form').addEventListener('submit', handleCreateVolume);
 document.getElementById('pull-image-form').addEventListener('submit', handlePullImage);
-document.getElementById('run-image-form').addEventListener('submit', handleRunImage);
-
-
+document.getElementById('create-container-form').addEventListener('submit', handleCreateContainer);
 
 //Modal Functions
 function showModal(target) {
@@ -103,7 +106,7 @@ async function handleCreateVolume(e) {
     };
 
     try {
-        apiManager.create('/api/volumes', volumeData);
+        apiManager.post('/api/volumes', volumeData);
         closeModal('create-volume-modal', 'create-volume-form');
         if (volumesManager) {
             volumesManager.loadVolumes();
@@ -208,12 +211,65 @@ async function handlePullImage(e) {
     }
 }
 
-function removeRunInput(button) {
-    button.parentElement.remove();
+async function handleCreateContainer(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Container...';
+
+    const hostPorts = Array.from(document.querySelectorAll('input[name="host-port"]')).map(input => input.value).filter(v => v);
+    const containerPorts = Array.from(document.querySelectorAll('input[name="container-port"]')).map(input => input.value).filter(v => v);
+    const envKeys = Array.from(document.querySelectorAll('input[name="env-key"]')).map(input => input.value).filter(v => v);
+    const envValues = Array.from(document.querySelectorAll('input[name="env-value"]')).map(input => input.value).filter(v => v);
+
+    const ports = [];
+    for (let i = 0; i < Math.min(hostPorts.length, containerPorts.length); i++) {
+        if (hostPorts[i] && containerPorts[i]) {
+            ports.push({
+                host: parseInt(hostPorts[i]),
+                container: parseInt(containerPorts[i])
+            });
+        }
+    }
+
+    const env = [];
+    for (let i = 0; i < Math.min(envKeys.length, envValues.length); i++) {
+        if (envKeys[i] && envValues[i]) {
+            env.push(`${envKeys[i]}=${envValues[i]}`);
+        }
+    }
+
+    const containerData = {
+        name: formData.get('name'),
+        image: formData.get('image'),
+        ports: ports,
+        env: env
+    };
+
+    try {
+        await apiManager.post('/api/containers', containerData);
+        console.log('Container created successfully');
+        closeModal('create-container-modal', 'create-container-form');
+        if (containerManager) {
+            containerManager.loadContainers();
+        }
+    } catch (error) {
+        console.error('Failed to create container: ' + error.message);
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
 }
 
-function addRunPortMapping() {
-    const container = document.getElementById('run-port-mappings');
+//Contaner modal
+function addPortMapping() {
+    const container = document.getElementById('port-mappings');
     const div = document.createElement('div');
     div.className = 'flex space-x-2 mb-2';
     div.innerHTML = `
@@ -222,13 +278,17 @@ function addRunPortMapping() {
         <span class="self-center text-gray-300">:</span>
         <input type="text" name="container-port" placeholder="Container Port"
                class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        <button type="button" onclick="removeRunInput(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
+        <button type="button" onclick="removePortMapping(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
     `;
     container.appendChild(div);
 }
 
-function addRunEnvVar() {
-    const container = document.getElementById('run-env-vars');
+function removePortMapping(button) {
+    button.parentElement.remove();
+}
+
+function addEnvVar() {
+    const container = document.getElementById('env-vars');
     const div = document.createElement('div');
     div.className = 'flex space-x-2 mb-2';
     div.innerHTML = `
@@ -237,26 +297,15 @@ function addRunEnvVar() {
         <span class="self-center text-gray-300">=</span>
         <input type="text" name="env-value" placeholder="value"
                class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        <button type="button" onclick="removeRunInput(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
+        <button type="button" onclick="removeEnvVar(this)" class="cursor-pointer text-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
     `;
     container.appendChild(div);
 }
 
-function addRunVolume() {
-    const container = document.getElementById('run-volumes');
-    const div = document.createElement('div');
-    div.className = 'flex space-x-2 mb-2';
-    div.innerHTML = `
-        <input type="text" name="host-volume" placeholder="Host Path"
-               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        <span class="self-center text-gray-300">:</span>
-        <input type="text" name="container-volume" placeholder="Container Path"
-               class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        <button type="button" onclick="removeRunInput(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">-</button>
-    `;
-    container.appendChild(div);
+function removeEnvVar(button) {
+    button.parentElement.remove();
 }
 
-async function handleRunImage(e){
 
-}
+
+

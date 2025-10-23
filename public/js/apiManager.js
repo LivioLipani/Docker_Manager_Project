@@ -41,7 +41,7 @@ class ApiManager {
             
             if (!response.ok) {
                 if (response.status === 403) {
-                    throw new Error('Admin access required to create volumes');
+                    throw new Error('Admin access required to post volumes');
                 }
                 if (response.status === 401 || response.status === 403) {
                     localStorage.removeItem('token');
@@ -63,7 +63,7 @@ class ApiManager {
         }
     };
 
-    async create (url, volumeData){
+    async post (url, sentData){
         try {
             const token = localStorage.getItem('token');
             
@@ -77,16 +77,12 @@ class ApiManager {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(volumeData)
+                body: JSON.stringify(sentData)
             });
             
             if (!response.ok) {
                 if (response.status === 403) {
-                    throw new Error('Admin access required to create volumes');
-                }
-
-                if (response.status === 400) {
-                    throw new Error(error.error || 'Volume name is required');
+                    throw new Error('Admin access required to create volumes, containers and images');
                 }
 
                 if (response.status === 401 || response.status === 403) {
@@ -95,11 +91,11 @@ class ApiManager {
                     throw new Error('Unauthorized');
                 }
                 
-                throw new Error(error.error || 'Failed to create volume');
+                throw new Error(error.error || 'Failed to create');
             }
             
             const data = await response.json();
-            console.log('Created successfully:', data);
+            console.log('created successfully:', data);
             return data;
             
         } catch (error) {

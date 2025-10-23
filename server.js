@@ -57,8 +57,8 @@ const socket = new socketService(io);
 
 server.listen(PORT, async () => {
     console.log(`Docker Manager Server running on port: ${PORT}`);
-    console.log(`Health check:  http://localhost:${PORT}/health`);
 
     const dockerConnected = await dockerService.testConnection();
     console.log(`Docker: ${dockerConnected ? 'Connected' : 'Disconnected'}`);
+
 });

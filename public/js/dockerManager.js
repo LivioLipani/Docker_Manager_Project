@@ -67,7 +67,7 @@ class VolumesManager {
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${volume.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.driver}</td>
                 <td class="px-6 py-4 text-sm text-gray-300">${volume.mountpoint}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.created ? formatDateTime(volume.created) : 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.postd ? formatDateTime(volume.postd) : 'N/A'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button onclick="volumesManager.removeVolume('${volume.name}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                         <i class="fas fa-trash"></i>
@@ -116,9 +116,6 @@ class ImagesManager {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(image.created)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <button onclick="imagesManager.runImage('${image.id}')" class="cursor-pointer text-green-400 hover:text-green-300" title="Run">
-                            <i class="fas fa-play"></i>
-                        </button>
                         <button onclick="imagesManager.removeImage('${image.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -137,21 +134,119 @@ class ImagesManager {
             }
         );
     }
-
-    showRunImageModal(imageId) {
-        document.getElementById('run-image-id').value = imageId;
-        document.getElementById('run-image-modal').classList.remove('hidden');
-    }
-
-    closeRunImageModal() {
-        document.getElementById('run-image-modal').classList.add('hidden');
-        document.getElementById('run-image-form').reset();
-    }
-
-    runImage(id) {
-        this.showRunImageModal(id);
-    }
-
 }
 
 const imagesManager = new ImagesManager();
+
+
+class ContainerManager{
+
+    async loadContainers() {
+        try {
+            const containers = await apiManager.get('/api/containers');
+            this.displayContainers(containers);
+        } catch (error) {
+            console.error('Failed to load containers:', error);
+        }
+    }
+
+    getStatusBadge(status) {
+        const badges = {
+            running: 'bg-green-100 text-green-800',
+            stopped: 'bg-red-100 text-red-800',
+            exited: 'bg-gray-100 text-gray-800',
+            paused: 'bg-yellow-100 text-yellow-800',
+            restarting: 'bg-blue-100 text-blue-800'
+        };
+        return badges[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    displayContainers(containers) {
+        const tbody = document.getElementById('containers-table');
+
+        if (containers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">No containers found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = containers.map(container => `
+            <tr class="hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${container.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${container.image}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusBadge(container.state)}">
+                        ${container.state}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-300">${this.formatPorts(container.ports)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(container.postd)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                        ${container.state === 'running' ?
+                            `<button onclick="containerManager.stopContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Stop">
+                                <i class="fas fa-stop"></i>
+                            </button>` :
+                            `<button onclick="containerManager.startContainer('${container.id}')" class="cursor-pointer text-green-400 hover:text-green-300" title="Start">
+                                <i class="fas fa-play"></i>
+                            </button>`
+                        }
+                        <button onclick="containerManager.restartContainer('${container.id}')" class="cursor-pointer text-blue-400 hover:text-blue-300" title="Restart">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button onclick="containerManager.removeContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    formatPorts(ports) {
+        if (!ports || ports.length === 0) return '-';
+        return ports.map(port => `${port.PublicPort || ''}:${port.PrivatePort}`).join(', ');
+    }
+
+    async startContainer(id) {
+        try {
+            await apiManager.post(`/api/containers/${id}/start`);
+            console.log('Container started successfully');
+            this.loadContainers();
+        } catch (error) {
+            console.error('Failed to start container');
+        }
+    }
+
+    async stopContainer(id) {
+        try {
+            await apiManager.post(`/api/containers/${id}/stop`);
+            console.log('Container stopped successfully');
+            this.loadContainers();
+        } catch (error) {
+            NotificationManager.error('Failed to stop container');
+        }
+    }
+
+    async restartContainer(id) {
+        try {
+            await apiManager.post(`/api/containers/${id}/restart`);
+            console.log('Container restarted successfully');
+            this.loadContainers();
+        } catch (error) {
+            console.error('Failed to restart container');
+        }
+    }
+
+    async removeContainer(id) {
+        showDeleteConfirmation(
+            'Are you sure you want to remove this container? This action cannot be undone.',
+            async () => {
+                await apiManager.remove(`/api/containers/${id}?force=true`);
+                console.log('Container removed successfully');
+                this.loadContainers();
+            }
+        );
+    }
+}
+
+const containerManager = new ContainerManager();
