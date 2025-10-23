@@ -3,7 +3,7 @@
 A web-based Docker management application that provides real-time monitoring and control of Docker containers, images, and volumes through an intuitive dashboard interface.
 
 <p align="center">
-  <img src="image.png" alt="Dashboard Docker Manager">
+  <img src="img/image.png" alt="Dashboard Docker Manager">
 </p>
 
 ## Technologies
