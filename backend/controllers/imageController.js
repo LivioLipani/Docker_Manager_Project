@@ -18,27 +18,32 @@ const pullImage = async (req, res) => {
         }
 
         const { imageName } = req.body;
-
         if (!imageName) {
             return res.status(400).json({ error: 'Image name is required' });
         }
 
-        res.writeHead(200, {
-            'Content-Type': 'application/json',
-            'Transfer-Encoding': 'chunked'
-        });
-
-        await DockerService.pullImage(imageName, (progress) => {
-            res.write(JSON.stringify(progress) + '\n');
+        const stream = await DockerService.pullImage(imageName, (event) => {
+            // Controllo errore specifico dentro il JSON di Docker
+            if (event.error) {
+                // Se Docker manda un errore nel JSON, lo giriamo al frontend
+                res.write(JSON.stringify({ error: event.error }) + '\n');
+            } else {
+                res.write(JSON.stringify(event) + '\n');
+            }
         });
 
         res.end(JSON.stringify({ success: true, message: 'Image pulled successfully' }));
+       
     } catch (error) {
-            console.error('Pull image error:', error);
+        console.error('Pull image error:', error);
+        
+        // Se non abbiamo ancora inviato nulla, mandiamo un errore JSON standard
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Failed to pull image' });
+            const isNotFound = error.message.includes('not found') || error.message.includes('404');
+            res.status(isNotFound ? 404 : 500).json({ error: error.message });
         } else {
-            res.end(JSON.stringify({ error: 'Failed to pull image' }));
+            // Se eravamo già in streaming, chiudiamo la connessione
+            res.end();
         }
     }
 };

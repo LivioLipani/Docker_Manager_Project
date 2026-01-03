@@ -2,7 +2,6 @@ const Docker = require('dockerode');
 
 let docker;
 try {
-  // Try Docker Desktop on macOS/Windows
   docker = new Docker();
 } catch (error) {
     try {
@@ -79,8 +78,8 @@ class DockerService {
             const stream = await docker.pull(imageName);
             return new Promise((resolve, reject) => {
                 docker.modem.followProgress(stream, (err, res) => {
-                if (err) reject(err);
-                else resolve(res);
+                    if (err) reject(err);
+                    else resolve(res);
                 }, onProgress);
             });
         } catch (error) {
