@@ -63,12 +63,12 @@ class VolumesManager {
         }
 
         tbody.innerHTML = volumes.map(volume => `
-            <tr class="hover:bg-gray-700 rounded-lg">
+            <tr class="hover:bg-gray-700">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${volume.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.driver}</td>
-                <td class="px-6 py-4 text-sm text-gray-300">${volume.mountpoint}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.mountpoint}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.created ? formatDateTime(volume.created) : 'N/A'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <button onclick="volumesManager.removeVolume('${volume.name}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -114,12 +114,10 @@ class ImagesManager {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${image.id}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatBytes(image.size)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(image.created)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-2">
-                        <button onclick="imagesManager.removeImage('${image.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button onclick="imagesManager.removeImage('${image.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>
         `).join('');
@@ -172,7 +170,14 @@ class ContainerManager{
         tbody.innerHTML = containers.map(container => `
             <tr class="hover:bg-gray-700">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${container.name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${container.image}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
+                    <div class="truncate">
+                        ${container.image}
+                    </div>
+                    <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute left-4 -top-3 z-50 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-xl pointer-events-none">
+                        ${container.image}
+                    </div>    
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusBadge(container.state)}">
                         ${container.state}
@@ -180,23 +185,21 @@ class ContainerManager{
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-300">${this.formatPorts(container.ports)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(container.created)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-2">
-                        ${container.state === 'running' ?
-                            `<button onclick="containerManager.stopContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Stop">
-                                <i class="fas fa-stop"></i>
-                            </button>` :
-                            `<button onclick="containerManager.startContainer('${container.id}')" class="cursor-pointer text-green-400 hover:text-green-300" title="Start">
-                                <i class="fas fa-play"></i>
-                            </button>`
-                        }
-                        <button onclick="containerManager.restartContainer('${container.id}')" class="cursor-pointer text-blue-400 hover:text-blue-300" title="Restart">
-                            <i class="fas fa-redo"></i>
-                        </button>
-                        <button onclick="containerManager.removeContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
+                    ${container.state === 'running' ?
+                        `<button onclick="containerManager.stopContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Stop">
+                            <i class="fas fa-stop"></i>
+                        </button>` :
+                        `<button onclick="containerManager.startContainer('${container.id}')" class="cursor-pointer text-green-400 hover:text-green-300" title="Start">
+                            <i class="fas fa-play"></i>
+                        </button>`
+                    }
+                    <button onclick="containerManager.restartContainer('${container.id}')" class="cursor-pointer text-blue-400 hover:text-blue-300" title="Restart">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button onclick="containerManager.removeContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>
         `).join('');

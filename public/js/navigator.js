@@ -127,35 +127,31 @@ function newupdatePullProgress(progress) {
     const progressText = document.getElementById('pull-progress-text');
     const progressLog = document.getElementById('pull-progress-log');
 
-    // 1. Aggiorna il testo e il log
+    // Aggiorna il testo e il log
     if (progress.status) {
         progressText.textContent = progress.id 
             ? `[${progress.id}] ${progress.status}` 
             : progress.status;
 
         const logEntry = document.createElement('div');
-        logEntry.className = 'log-entry'; // Puoi dargli stile nel CSS
+        logEntry.className = 'log-entry';
         logEntry.textContent = `${new Date().toLocaleTimeString()}: ${progress.status} ${progress.id || ''}`;
         progressLog.appendChild(logEntry);
         
-        // Limita il numero di righe nel log per non appesantire il DOM
         if (progressLog.childNodes.length > 50) {
             progressLog.removeChild(progressLog.firstChild);
         }
         progressLog.scrollTop = progressLog.scrollHeight;
     }
 
-    // 2. Calcola la media reale del progresso
+    // avg real of the process
     if (progress.id && progress.progressDetail && progress.progressDetail.total) {
-        // Memorizziamo il progresso per questo specifico layer
         layerProgress[progress.id] = (progress.progressDetail.current / progress.progressDetail.total) * 100;
 
-        // Calcoliamo la media di tutti i layer attivi
         const layers = Object.values(layerProgress);
         const totalPercentage = Math.round(layers.reduce((a, b) => a + b, 0) / layers.length);
 
         progressBar.style.width = `${totalPercentage}%`;
-        // Opzionale: mostra la percentuale media nel testo
         if (totalPercentage > 0) {
             progressText.textContent = `Downloading layers: ${totalPercentage}%`;
         }
@@ -251,7 +247,7 @@ async function handlePullImage(e) {
         }
 
         if (hasError) {
-            throw new Error("Errore durante il download dell'immagine.");
+            throw new Error("Error image download");
         }
 
         document.getElementById('pull-progress-close-btn').disabled = false;
@@ -261,13 +257,13 @@ async function handlePullImage(e) {
             imagesManager.loadImages();
         }
     } catch (error) {
-        console.error('Pull image error:', error);
         document.getElementById('pull-progress-close-btn').disabled = false;
-        
-        const errorText = error.message.includes('404') 
-            ? `image "${imageData.imageName}" not found` 
-            : error.message;
-            
+
+        let errorText = "";
+
+        if(error.message == 404) errorText = `image "${imageData.imageName}" not found`;
+        if(error.message == 500) errorText = "Internal sever error";
+
         document.getElementById('pull-progress-text').style.color = 'red';
         document.getElementById('pull-progress-text').textContent = 'Pull failed: ' + errorText;
     }

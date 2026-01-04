@@ -35,14 +35,13 @@ const pullImage = async (req, res) => {
         res.end(JSON.stringify({ success: true, message: 'Image pulled successfully' }));
        
     } catch (error) {
-        console.error('Pull image error:', error);
+        console.error('Pull image error:', error.statusCode);
         
         // Se non abbiamo ancora inviato nulla, mandiamo un errore JSON standard
         if (!res.headersSent) {
-            const isNotFound = error.message.includes('not found') || error.message.includes('404');
-            res.status(isNotFound ? 404 : 500).json({ error: error.message });
+            if(error.statusCode == 404) res.status(404).json({ error: 404});
+            if(error.statusCode == 500) res.status(500).json({ error: 500});
         } else {
-            // Se eravamo già in streaming, chiudiamo la connessione
             res.end();
         }
     }

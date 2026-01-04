@@ -83,7 +83,6 @@ class DockerService {
                 }, onProgress);
             });
         } catch (error) {
-            console.error('Failed to pull image:', error);
             throw error;
         }
     }
