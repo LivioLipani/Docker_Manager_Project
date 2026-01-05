@@ -52,6 +52,7 @@ class VolumesManager {
             this.displayVolumes(volumes);
         } catch (error) {
             console.error('Failed to load volumes:', error);
+            document.getElementById('volumes-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load volumes: ${error.message} found</td></tr>`;
         }
     } 
 
@@ -98,6 +99,7 @@ class ImagesManager {
             this.displayImages(images);
         } catch (error) {
             console.error('Failed to load images:', error);
+            document.getElementById('images-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load images: ${error.message} found</td></tr>`;
         }
     }
 
@@ -145,6 +147,7 @@ class ContainerManager{
             this.displayContainers(containers);
         } catch (error) {
             console.error('Failed to load containers:', error);
+            document.getElementById('containers-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load containers: ${error.message} found</td></tr>`;
         }
     }
 
@@ -206,8 +209,28 @@ class ContainerManager{
     }
 
     formatPorts(ports) {
-        if (!ports || ports.length === 0) return '-';
-        return ports.map(port => `${port.PublicPort || ''}:${port.PrivatePort}`).join(', ');
+        if (!ports || ports.length === 0) {
+            return '<span class="text-gray-500 text-xs">-</span>';
+        }
+
+        return ports.map(p => {
+            if (p.PublicPort) {
+                return `
+                    <div class="flex items-center gap-1 mb-1 last:mb-0">
+                        <span class="text-gray-300 font-mono text-xs font-bold" title="Host Port (Reale)">${p.PublicPort}</span>
+                        <i class="fas fa-arrow-right text-[10px] text-gray-500"></i>
+                        <span class="text-gray-300 font-mono text-xs" title="Container Port">${p.PrivatePort}</span>
+                        <span class="text-gray-600 text-[10px] uppercase">/${p.Type}</span>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="text-xs text-gray-500 font-mono mb-1 last:mb-0">
+                        ${p.PrivatePort}/${p.Type} <span class="text-[10px] italic">(exposed)</span>
+                    </div>
+                `;
+            }
+        }).join('');
     }
 
     async startContainer(id) {
@@ -253,3 +276,87 @@ class ContainerManager{
 }
 
 const containerManager = new ContainerManager();
+
+class NetworkManager{
+
+    async loadNetworks() {
+        try {
+            const networks = await apiManager.get('/api/networks');
+            this.displayNetworks(networks);
+        } catch (error) {
+            console.error('Failed to load network:', error);
+            document.getElementById('networks-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load network: ${error.message} found</td></tr>`;
+        }
+    }
+
+    displayNetworks(networks) {
+        const tbody = document.getElementById('networks-table');
+
+        // Controllo se l'array è vuoto
+        if (!networks || networks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">No networks found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = networks.map(network => {
+            const ipConfig = network.ipam?.config?.[0] || {}; 
+            const subnet = ipConfig.Subnet || 'N/A';
+            const gateway = ipConfig.Gateway || '';
+
+            const systemNetworks = ['bridge', 'host', 'none'];
+            
+            const ipInfo = gateway 
+                ? `${subnet} <br> <span class="text-xs text-gray-500">${gateway}</span>` 
+                : subnet;
+
+            const isSystem = systemNetworks.includes(network.name);
+
+            const deleteBtn = isSystem 
+                ? `<button disabled class="text-red-400 opacity-60" title="System Network">
+                     <i class="fas fa-trash-alt"></i>
+                   </button>`
+                : `<button onclick="deleteNetwork('${network.id}')" class="cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-200" title="Remove Network">
+                     <i class="fas fa-trash-alt"></i>
+                   </button>`;
+
+            return `
+            <tr class="hover:bg-gray-700/50 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-white">${network.name}</div>
+                    <div class="text-xs text-gray-500 font-mono">${network.id.substring(0, 12)}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                        ${network.driver}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    ${network.scope}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    ${ipInfo}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    ${new Date(network.created).toLocaleDateString()}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    ${deleteBtn}
+                </td>
+            </tr>
+            `;
+        }).join('');
+    }
+
+    async deleteNetwork(id) {
+        showDeleteConfirmation(
+            'Are you sure you want to remove this network? This action cannot be undone.',
+            async () => {
+                await apiManager.remove(`/api/network/${id}?force=true`);
+                console.log('Network removed successfully');
+                this.loadContainers();
+            }
+        );
+    }
+}
+
+const networksManager = new NetworkManager();

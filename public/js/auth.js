@@ -84,8 +84,8 @@ loginForm.addEventListener("submit", async function (e) {
             //connect the socket
             socketManager.connect();
             chartManager.init(); 
-        } else {
-            showError(data.error || "Login failed");
+        }else{
+          showError(data.error || "Login failed");
         }
     }catch (error) {
         showError("Errore di connessione al server");

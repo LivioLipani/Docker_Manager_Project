@@ -50,12 +50,17 @@ class SocketService{
             });
 
             socket.on('subscribe_system_stats', () => {
-                this.newsubscribeToSystemStats(socket);
+                this.subscribeToSystemStats(socket);
+            });
+
+            socket.on('unsubscribe_system_stats', () => {
+                console.log(`User ${socket.user.username} unsubscribed from stats`);
+                this.unsubscribeFromSystemStats(socket);
             });
         });
     }
 
-    newsubscribeToSystemStats(socket){
+    subscribeToSystemStats(socket){
         const intervalKey = `${socket.id}_system`;
 
         if (this.statsIntervals.has(intervalKey)) {
@@ -86,10 +91,11 @@ class SocketService{
                 return;
             }
 
-            const [containers, images, volumes, systemInfo] = await Promise.all([
+            const [containers, images, volumes, networks, systemInfo] = await Promise.all([
                 DockerService.getContainers(),
                 DockerService.getImages(),
                 DockerService.getVolumes(),
+                DockerService.getNetworks(),
                 DockerService.getSystemInfo()
             ]);
 
@@ -144,6 +150,7 @@ class SocketService{
                 },
                 images: images.length,
                 volumes: volumes.length,
+                networks: networks.length,
                 resources: {
                     cpu_percent: Math.round(avgCpuUsage * 100) / 100,
                     memory_usage: totalMemoryUsage,
@@ -167,108 +174,6 @@ class SocketService{
             console.error("Socket Loop Error:", error);
             socket.emit('system_stats_error', { error: error.message });
         }
-    }
-
-    subscribeToSystemStats(socket) {
-        const intervalKey = `${socket.id}_system`;
-
-        if (this.statsIntervals.has(intervalKey)){
-            return;
-        }
-
-        const interval = setInterval(async () => {
-            try{
-                const [containers, images, volumes, systemInfo] = await Promise.all([
-                    DockerService.getContainers(),
-                    DockerService.getImages(),
-                    DockerService.getVolumes(),
-                    DockerService.getSystemInfo()
-                ]);
-
-                const runningContainers = containers.filter(c => c.state === 'running');
-                //console.log("container running:", runningContainers);
-
-                const totalContainers = containers.length;
-                const totalImages = images.length;
-                const totalVolumes = volumes.length;
-
-                let totalCpuUsage = 0;
-                let totalMemoryUsage = 0;
-                let totalMemoryLimit = 0;
-                let totalNetworkRx = 0;
-                let totalNetworkTx = 0;
-                let containerCount = 0;
-
-                // Collect stats from all running containers
-                const containerStatsPromises = runningContainers.map(async (container) => {
-                    try {
-                        const stats = await DockerService.getContainerStats(container.fullId);
-                        return {
-                            id: container.id,
-                            name: container.name,
-                            cpu_percent: stats.cpu_percent,
-                            memory_usage: stats.memory_usage,
-                            memory_limit: stats.memory_limit,
-                            memory_percent: stats.memory_percent,
-                            network_rx: stats.network_rx,
-                            network_tx: stats.network_tx
-                        };
-                    } catch (error) {
-                        console.error(`Failed to get stats for container ${container.id}:`, error.message);
-                        return null;
-                    }
-                });
-
-                const containerStats = (await Promise.all(containerStatsPromises)).filter(stats => stats !== null);
-
-                // Calculate aggregated resource usage
-                containerStats.forEach(stats => {
-                    totalCpuUsage += stats.cpu_percent;
-                    totalMemoryUsage += stats.memory_usage;
-                    totalMemoryLimit += stats.memory_limit;
-                    totalNetworkRx += stats.network_rx;
-                    totalNetworkTx += stats.network_tx;
-                    containerCount++;
-                });
-
-                const avgCpuUsage = containerCount > 0 ? totalCpuUsage / containerCount : 0;
-                const totalMemoryPercent = totalMemoryLimit > 0 ? (totalMemoryUsage / totalMemoryLimit) * 100 : 0;
-
-                const systemStats = {
-                    containers: {
-                        running: runningContainers.length,
-                        total: totalContainers
-                    },
-                    images: totalImages,
-                    volumes: totalVolumes,
-                    resources: {
-                        cpu_percent: Math.round(avgCpuUsage * 100) / 100,
-                        memory_usage: totalMemoryUsage,
-                        memory_limit: totalMemoryLimit,
-                        memory_percent: Math.round(totalMemoryPercent * 100) / 100,
-                        network_rx: totalNetworkRx,
-                        network_tx: totalNetworkTx,
-                        container_count: containerCount
-                    },
-                    containerStats: containerStats,
-                    system: {
-                        containers: systemInfo.Containers,
-                        images: systemInfo.Images,
-                        memTotal: systemInfo.MemTotal,
-                        cpus: systemInfo.NCPU,
-                        kernelVersion: systemInfo.KernelVersion,
-                        dockerVersion: systemInfo.ServerVersion
-                    }
-                };
-
-                socket.emit('update_system_stats', systemStats);
-            }catch{
-                socket.emit('system_stats_error', { error: error.message });
-                this.unsubscribeFromSystemStats(socket);
-            }
-        }, 2000)
-
-        this.statsIntervals.set(intervalKey, interval);
     }
 
     unsubscribeFromSystemStats(socket) {

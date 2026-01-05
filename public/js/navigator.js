@@ -47,6 +47,9 @@ const navigateTo = (target) => {
         case "volumes":
             volumesManager.loadVolumes();
             break;
+        case "networks":
+            networksManager.loadNetworks();
+            break;
     }
 }
 
@@ -63,6 +66,10 @@ document.getElementById('pull-image-btn').addEventListener('click', () => {
 //Create Container button
 document.getElementById('create-container-btn').addEventListener('click', () => {
     showModal('create-container-modal');
+});
+
+document.getElementById('create-network-btn').addEventListener('click', () => {
+    showModal('create-network-modal');
 });
 
 // Form submission handlers

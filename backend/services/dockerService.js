@@ -113,6 +113,30 @@ class DockerService {
         }
     }
 
+    static async getNetworks() {
+        try {
+            const networks = await docker.listNetworks();
+            return networks.map(network => ({
+                id: network.Id.substring(0, 12),
+                fullId: network.Id,
+                name: network.Name,
+                driver: network.Driver,
+                scope: network.Scope,
+                internal: network.Internal,
+                attachable: network.Attachable,
+                created: new Date(network.Created), 
+                ipam: {
+                    driver: network.IPAM?.Driver || 'default',
+                    config: network.IPAM?.Config || [] 
+                },
+                labels: network.Labels || {}
+            }));
+        } catch (error) {
+            console.error('Failed to get networks:', error);
+            throw error;
+        }
+    }
+
     static async createVolume(name, driver = 'local') {
         try {
         const volume = await docker.createVolume({ Name: name, Driver: driver });

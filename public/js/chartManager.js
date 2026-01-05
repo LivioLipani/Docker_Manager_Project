@@ -145,6 +145,9 @@ class ChartManager{
         document.getElementById('total-images').textContent = stats.images;
         document.getElementById('total-volumes').textContent = stats.volumes;
 
+        const netEl = document.getElementById('total-networks');
+        if (netEl) netEl.textContent = stats.networks || 0;
+
         //update container status first chart
         if (this.containerStatusChart) {
             this.containerStatusChart.data.datasets[0].data = [
@@ -219,24 +222,33 @@ class ChartManager{
 
     async loadInitialData() {
         try {
-            const [containers, images, volumes] = await Promise.all([
+            const [containers, images, volumes, networks] = await Promise.all([
                 apiManager.get('/api/containers'),
                 apiManager.get('/api/images'),
-                apiManager.get('/api/volumes')
+                apiManager.get('/api/volumes'),
+                apiManager.get('/api/networks')
             ]);
 
             const runningContainers = containers.filter(c => c.state === 'running').length;
 
             const initialStats = {
+                online: true,
                 containers: {
                     running: runningContainers,
                     total: containers.length
                 },
                 images: images.length,
                 volumes: volumes.length,
-                system: {
-                    memTotal: 8589934592,
-                    cpus: 4
+                networks: networks ? networks.length : 0,
+            
+                resources: {
+                    cpu_percent: 0,
+                    memory_percent: 0,
+                    memory_usage: 0,
+                    memory_limit: 0,
+                    network_rx: 0,
+                    network_tx: 0,
+                    container_count: runningContainers
                 }
             };
 
