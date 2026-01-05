@@ -13,6 +13,7 @@ const showView = (target) => {
     document.getElementById('containers-view').classList.add('hidden');
     document.getElementById('images-view').classList.add('hidden');
     document.getElementById('volumes-view').classList.add('hidden');
+    document.getElementById('networks-view').classList.add('hidden');
     console.log(target);
 
     document.getElementById(`${target}-view`).classList.remove('hidden');
@@ -120,9 +121,9 @@ async function handleCreateVolume(e) {
     }
 }
 
-const layerProgress = {};
 
-function newupdatePullProgress(progress) {
+
+function newupdatePullProgress(progress, layerProgress, maxTotalPercentage) {
     const progressBar = document.getElementById('pull-progress-bar');
     const progressText = document.getElementById('pull-progress-text');
     const progressLog = document.getElementById('pull-progress-log');
@@ -146,39 +147,22 @@ function newupdatePullProgress(progress) {
 
     // avg real of the process
     if (progress.id && progress.progressDetail && progress.progressDetail.total) {
-        layerProgress[progress.id] = (progress.progressDetail.current / progress.progressDetail.total) * 100;
+        const currentLayerPercent = (progress.progressDetail.current / progress.progressDetail.total) * 100;
+
+        if (!layerProgress[progress.id] || currentLayerPercent > layerProgress[progress.id]) {
+            layerProgress[progress.id] = currentLayerPercent;
+        }
 
         const layers = Object.values(layerProgress);
-        const totalPercentage = Math.round(layers.reduce((a, b) => a + b, 0) / layers.length);
+        const currentCalculation = Math.round(layers.reduce((a, b) => a + b, 0) / layers.length);
 
-        progressBar.style.width = `${totalPercentage}%`;
-        if (totalPercentage > 0) {
-            progressText.textContent = `Downloading layers: ${totalPercentage}%`;
-        }
-    }
-}
+        if (currentCalculation > maxTotalPercentage) {
+            maxTotalPercentage = currentCalculation;
 
-function updatePullProgress(progress) {
-    const progressBar = document.getElementById('pull-progress-bar');
-    const progressText = document.getElementById('pull-progress-text');
-    const progressLog = document.getElementById('pull-progress-log');
-
-    if (progress.status) {
-        progressText.textContent = progress.status;
-
-        // Add to log
-        const logEntry = document.createElement('div');
-        logEntry.textContent = `${new Date().toLocaleTimeString()}: ${progress.status}`;
-        progressLog.appendChild(logEntry);
-        progressLog.scrollTop = progressLog.scrollHeight;
-    }
-
-    if (progress.progressDetail) {
-        const detail = progress.progressDetail;
-        if (detail.current && detail.total) {
-            const percentage = Math.round((detail.current / detail.total) * 100);
-            progressBar.style.width = `${percentage}%`;
-            progressText.textContent = `${progress.status} (${percentage}%)`;
+            progressBar.style.width = `${maxTotalPercentage}%`;
+            if (maxTotalPercentage > 0 && maxTotalPercentage < 100) {
+                progressText.textContent = `Downloading: ${maxTotalPercentage}%`;
+            }
         }
     }
 }
@@ -217,7 +201,10 @@ async function handlePullImage(e) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
-
+        const layerProgress = {};
+        let maxTotalPercentage = 0;
+        document.getElementById('pull-progress-bar').style.width = '0%';
+        
         while (true) {
             const { value, done } = await reader.read();
 
@@ -237,7 +224,7 @@ async function handlePullImage(e) {
                             throw new Error(progress.error);
                         }
 
-                        newupdatePullProgress(progress);
+                        newupdatePullProgress(progress, layerProgress, maxTotalPercentage);
                     } catch (parseError) {
                         if (parseError.message === progress?.error) throw parseError;
                             console.log('Parse error:', parseError, 'Line:', line);
@@ -259,7 +246,7 @@ async function handlePullImage(e) {
     } catch (error) {
         document.getElementById('pull-progress-close-btn').disabled = false;
 
-        let errorText = "";
+        let errorText = error.message;
 
         if(error.message == 404) errorText = `image "${imageData.imageName}" not found`;
         if(error.message == 500) errorText = "Internal sever error";

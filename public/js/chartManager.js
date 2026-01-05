@@ -114,10 +114,25 @@ class ChartManager{
     }
 
     updateInfo(stats){
-        document.getElementById('running-containers').textContent = stats.containers.running;
-        document.getElementById('total-images').textContent = stats.images;
-        document.getElementById('total-volumes').textContent = stats.volumes;
-        document.getElementById('system-status').innerHTML = '<span class="text-green-500">Online</span>';
+        const statusElement = document.getElementById('system-status');
+
+        if (stats.online === false) {
+            if (statusElement) {
+                statusElement.innerHTML =`<span class="flex items-center text-red-500 gap-2">
+                                                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                                Offline
+                                          </span>`;
+            }
+            
+            document.getElementById('running-containers').textContent = '-';
+            document.getElementById('resource-info').textContent = 'Docker daemon not reachable';
+            return; 
+        }
+
+        statusElement.innerHTML = `<span class="flex items-center text-green-500 gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                        Online
+                                    </span>`;
 
         const statusCounts = {
             running: stats.containers.running,
@@ -125,6 +140,10 @@ class ChartManager{
             paused: 0,
             exited: 0
         };
+
+        document.getElementById('running-containers').textContent = stats.containers.running;
+        document.getElementById('total-images').textContent = stats.images;
+        document.getElementById('total-volumes').textContent = stats.volumes;
 
         //update container status first chart
         if (this.containerStatusChart) {
@@ -175,12 +194,27 @@ class ChartManager{
             this.updateInfo(stats);
         });
 
+        this.socket.on('disconnect', () => {
+            const el = document.getElementById('system-status');
+            if(el) el.innerHTML = `<span class="flex items-center text-yellow-500 gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                                        Connecting...
+                                    </span>`;
+        });
+
         this.socket.on('system_stats_error', (error) => {
             console.error('System stats error:', error);
             document.getElementById('system-status').innerHTML = '<span class="text-red-500">Error</span>';
         });
 
-        this.socket.emit('subscribe_system_stats');
+        this.socket.on('connect', () => {
+            console.log('Socket reconnected! Resubscribing...');
+            this.socket.emit('subscribe_system_stats'); 
+        });
+
+        if (this.socket.connected) {
+             this.socket.emit('subscribe_system_stats');
+        }
     }
 
     async loadInitialData() {

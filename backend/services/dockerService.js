@@ -5,22 +5,21 @@ try {
   docker = new Docker();
 } catch (error) {
     try {
-        // Fallback to socket path
         docker = new Docker({
         socketPath: process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock'
         });
     } catch (fallbackError) {
         console.error('Failed to connect to Docker:', fallbackError);
-        docker = new Docker(); // Default connection as last resort
+        docker = new Docker();
     }
 }
 
 class DockerService {
-    static async testConnection() {
-        try {
+    static async testConnection(){
+        try{
             await docker.ping();
             return true;
-        } catch (error) {
+        }catch(error) {
             console.error('Docker connection failed:', error);
             return false;
         }
@@ -172,16 +171,16 @@ class DockerService {
         }
     }
 
-  static async removeContainer(id, force = false) {
-    try {
-        const container = docker.getContainer(id);
-        await container.remove({ force });
-        return { success: true, message: 'Container removed successfully' };
-    } catch (error) {
-      console.error('Failed to remove container:', error);
-      throw error;
+    static async removeContainer(id, force = false) {
+        try {
+            const container = docker.getContainer(id);
+            await container.remove({ force });
+            return { success: true, message: 'Container removed successfully' };
+        } catch (error) {
+            console.error('Failed to remove container:', error);
+            throw error;
+        }
     }
-  }
 
   static async createContainer(options) {
     try {
