@@ -29,6 +29,8 @@ A web-based Docker management application that provides real-time monitoring and
 - **Container Management**: Start, stop, restart, and remove Docker containers
 - **Image Management**: Pull, run, and remove Docker images
 - **Volume Management**: Create and delete Docker volumes
+- **Network Management**: Work in progress...
+- **Compose Management**: Work in progress...
 - **Real-time Monitoring**: Live dashboard with container statistics and metrics
 - **Authentication**: Secure JWT-based authentication system
 - **User Roles**: Admin and read-only user access levels
