@@ -34,10 +34,8 @@ async function executeDelete() {
             await pendingDeleteAction();
             closeDeleteConfirmation();
         } catch (error) {
-            // Error is already handled in the delete action
             console.error('Delete action failed:', error);
         } finally {
-            // Reset button state
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalContent;
         }
@@ -45,11 +43,14 @@ async function executeDelete() {
 }
 
 class VolumesManager {
+    constructor() {
+        this.volumes = null;
+    }
     
     async loadVolumes() {
         try {
-            const volumes = await apiManager.get('/api/volumes');
-            this.displayVolumes(volumes);
+            this.volumes = await apiManager.get('/api/volumes');
+            this.displayVolumes(this.volumes);
         } catch (error) {
             console.error('Failed to load volumes:', error);
             document.getElementById('volumes-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load volumes: ${error.message} found</td></tr>`;
@@ -92,11 +93,14 @@ class VolumesManager {
 const volumesManager = new VolumesManager();
 
 class ImagesManager {
+    constructor() {
+        this.images = null;
+    }
 
     async loadImages() {
         try {
-            const images = await apiManager.get('/api/images');
-            this.displayImages(images);
+            this.images = await apiManager.get('/api/images');
+            this.displayImages(this.images);
         } catch (error) {
             console.error('Failed to load images:', error);
             document.getElementById('images-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load images: ${error.message} found</td></tr>`;
@@ -140,11 +144,14 @@ const imagesManager = new ImagesManager();
 
 
 class ContainerManager{
+    constructor() {
+        this.containers = null;
+    }
 
     async loadContainers() {
         try {
-            const containers = await apiManager.get('/api/containers');
-            this.displayContainers(containers);
+            this.containers = await apiManager.get('/api/containers');
+            this.displayContainers(this.containers);
         } catch (error) {
             console.error('Failed to load containers:', error);
             document.getElementById('containers-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load containers: ${error.message} found</td></tr>`;
@@ -278,11 +285,14 @@ class ContainerManager{
 const containerManager = new ContainerManager();
 
 class NetworkManager{
+    constructor() {
+        this.networks = null;
+    }
 
     async loadNetworks() {
         try {
-            const networks = await apiManager.get('/api/networks');
-            this.displayNetworks(networks);
+            this.networks = await apiManager.get('/api/networks');
+            this.displayNetworks(this.networks);
         } catch (error) {
             console.error('Failed to load network:', error);
             document.getElementById('networks-table').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load network: ${error.message} found</td></tr>`;

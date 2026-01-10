@@ -1,9 +1,10 @@
 const navigator = document.querySelectorAll('.nav-link');
+let view = null;
 
 navigator.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
-        const view = link.getAttribute('data-view');
+        view = link.getAttribute('data-view');
         navigateTo(view);
     })
 })
@@ -358,6 +359,51 @@ function removeEnvVar(button) {
     button.parentElement.remove();
 }
 
+//Sort table
+document.querySelectorAll("th").forEach(elem => {
+    elem.addEventListener("click", () => {
+        switch (view) {
+            case "volumes":
+                volumesManager.volumes = sortTables(volumesManager.volumes, elem);
+                volumesManager.displayVolumes(volumesManager.volumes);
+                break;
+            case "images":
+                imagesManager.images = sortTables(imagesManager.images, elem);
+                imagesManager.displayImages(imagesManager.images);
+                break;
+            case "containers":
+                containerManager.containers = sortTables(containerManager.containers, elem);
+                containerManager.displayContainers(containerManager.containers);
+                break;
+            case "networks":
+                networksManager.networks = sortTables(networksManager.networks, elem);
+                networksManager.displayNetworks(networksManager.networks)
+                break;
+        }
+    })
+})
 
+const sortTables = (array, elem) => {
+    let column = elem.getAttribute('data-collumn');
+    let order = elem.getAttribute('data-sort');
+    let text = elem.innerHTML;
+    if(column != "none") text = text.substring(0, text.length - 1);
 
+    if(order == 'desc'){
+        if(column != "none"){
+            elem.setAttribute('data-sort', 'asc');
+            array = array.sort((a, b) => a[column] >= b[column] ? 1 : -1);
+            text += "&#9660";
+        }
+    }else{
+        if(column != "none"){
+            elem.setAttribute('data-sort', 'desc');
+            array = array.sort((a, b) => a[column] <= b[column] ? 1 : -1);
+            text += "&#9650";
+        }
+    }
+
+    elem.innerHTML = text;
+    return array;
+}
 

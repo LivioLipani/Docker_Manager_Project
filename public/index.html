@@ -306,11 +306,11 @@
                                 <table class="min-w-full divide-y divide-gray-700">
                                     <thead class="bg-gray-900/50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Driver</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Mount Point</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
-                                            <th class="px-6 py-3 text-center whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "name" data-sort = "desc">Name &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "driver" data-sort = "desc">Driver &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "mountpoint" data-sort = "desc">Mount Point &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "created" data-sort = "desc">Created &#9650</th>
+                                            <th class="px-6 py-3 text-center whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "none" data-sort = "desc">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="volumes-table" class="divide-y divide-gray-700 bg-gray-800">
@@ -343,12 +343,12 @@
                                 <table class="w-full table-auto divide-y divide-gray-700">
                                     <thead class="bg-gray-900/50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                                            <th class="w-64 max-w-[256px] px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Image</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Ports</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
-                                            <th class="px-6 py-3 text-center whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "name" data-sort = "desc">Name &#9650</th>
+                                            <th class="cursor-pointer w-64 max-w-[256px] px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "image" data-sort = "desc">Image &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "state" data-sort = "desc">Status &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "ports" data-sort = "desc">Ports &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "created" data-sort = "desc">Created &#9650</th>
+                                            <th class="px-6 py-3 text-center whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "none" data-sort = "desc">Actions</th>
                                         </tr>
                                     </thead>                                       
                                         <tbody id="containers-table" class="divide-y divide-gray-700 bg-gray-800">
@@ -381,11 +381,11 @@
                                 <table class="w-full table-auto divide-y divide-gray-700">
                                     <thead class="bg-gray-900/50">
                                         <tr class="border-b border-gray-700">
-                                            <th class="px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider">Repository:Tag</th>
-                                            <th class="px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider">Image ID</th>
-                                            <th class="px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider">Size</th>
-                                            <th class="px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider">Created</th>
-                                            <th class="px-6 py-3 text-center text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider" data-collumn = "repository" data-sort = "desc">Repository:Tag &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider" data-collumn = "imageid" data-sort = "desc">Image ID &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider" data-collumn = "size" data-sort = "desc">Size &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider" data-collumn = "created" data-sort = "desc">Created &#9650</th>
+                                            <th class="px-6 py-3 text-center text-xs whitespace-nowrap font-medium text-gray-400 uppercase tracking-wider" data-collumn = "none" data-sort = "desc">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="images-table" class="divide-y divide-gray-700 bg-gray-800">
@@ -418,12 +418,12 @@
                                 <table class="w-full table-auto divide-y divide-gray-700">
                                     <thead class="bg-gray-900/50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Driver</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Scope</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Subnet / Gateway</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
-                                            <th class="px-6 py-3 text-center whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "name" data-sort = "desc">Name &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "driver" data-sort = "desc">Driver &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "scope" data-sort = "desc">Scope &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "subnet" data-sort = "desc">Subnet / Gateway &#9650</th>
+                                            <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "created" data-sort = "desc">Created &#9650</th>
+                                            <th class="px-6 py-3 text-center whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "none" data-sort = "desc">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="networks-table" class="divide-y divide-gray-700 bg-gray-800">
