@@ -198,6 +198,10 @@ class ChartManager{
         });
 
         this.socket.on('disconnect', () => {
+            if(!socketManager.isLogout){
+                return;
+            }
+
             const el = document.getElementById('system-status');
             if(el) el.innerHTML = `<span class="flex items-center text-yellow-500 gap-2">
                                         <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
@@ -211,8 +215,10 @@ class ChartManager{
         });
 
         this.socket.on('connect', () => {
-            console.log('Socket reconnected! Resubscribing...');
-            this.socket.emit('subscribe_system_stats'); 
+            if(!this.isLogout){
+                console.log('Socket reconnected! Resubscribing...');
+                this.socket.emit('subscribe_system_stats');
+            }
         });
 
         if (this.socket.connected) {

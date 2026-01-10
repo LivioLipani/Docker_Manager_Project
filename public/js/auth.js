@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 AuthManager.removeToken();
             }
         } catch (error) {
-            console.error('Errore nella verifica del token:', error);
+            console.error('Error token verify:', error);
             AuthManager.removeToken();
         }
     }
