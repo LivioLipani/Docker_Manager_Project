@@ -27,9 +27,9 @@ A web-based Docker management application that provides real-time monitoring and
 ## Features
 
 - **Container Management**: Start, stop, restart, and remove Docker containers
-- **Image Management**: Pull, run, and remove Docker images
+- **Image Management**: Pull and remove Docker images
 - **Volume Management**: Create and delete Docker volumes
-- **Network Management**: Work in progress...
+- **Network Management**: Create and delete Docker networks 
 - **Compose Management**: Work in progress...
 - **Real-time Monitoring**: Live dashboard with container statistics and metrics
 - **Authentication**: Secure JWT-based authentication system
@@ -127,6 +127,11 @@ Before running this application, ensure you have the following installed:
 - `GET /api/volumes` - List all volumes
 - `POST /api/volumes` - Create a new volume
 - `DELETE /api/volumes/:name` - Remove a volume
+- 
+- ### Networks
+- `GET /api/networks` - List all networks
+- `POST /api/networks` - Create a new network
+- `DELETE /api/networks/:id` - Remove a network
 
 ### Health Check
 - `GET /health` - Application and Docker connection health status

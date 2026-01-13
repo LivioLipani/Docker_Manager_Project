@@ -23,45 +23,61 @@ class ApiManager {
         }
     }
 
-    async remove (url) {
+    async remove(url) {
         try {
             const token = localStorage.getItem('token');
             
             if (!token) {
-            throw new Error('Token not found');
+                window.location.href = '/login.html';
+                throw new Error('Token not found');
             }
             
             const response = await fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-            });
-            
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('Admin access required to post volumes');
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-                if (response.status === 401 || response.status === 403) {
-                    localStorage.removeItem('token');
-                    window.location.href = '/login';
-                    throw new Error('Unauthorized');
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = '/login.html'; 
+                throw new Error('Session expired');
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                
+                if (response.status === 403) {
+                    throw new Error(errorData.message || 'Permission denied: Admin access required');
                 }
                 
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Error: ${response.status}`);
+                if (response.status === 404) {
+                    throw new Error('Resource not found');
+                }
+
+                if (response.status === 409) {
+                    throw new Error(errorData.message || 'Conflict: Resource is currently in use');
+                }
+
+                throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
             }
             
+            if (response.status === 204) {
+                console.log('Deleted successfully (No Content)');
+                return { success: true };
+            }
+
             const data = await response.json();
-            console.log('deleted successfully:', data);
+            console.log('Deleted successfully:', data);
             return data;
             
         } catch (error) {
-            console.error('Error deleting:', error.message);
+            console.error('API Manager Error (DELETE):', error.message);
             throw error;
         }
-    };
+    }
 
     async post (url, sentData){
         try {

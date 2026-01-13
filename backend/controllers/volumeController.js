@@ -32,7 +32,7 @@ const createVolume = async (req, res) => {
         return res.status(403).json({ error: 'Admin access required to create volumes' });
         }
 
-        const { name, driver = 'local' } = req.body;
+        const { name, driver} = req.body;
 
         if (!name) {
         return res.status(400).json({ error: 'Volume name is required' });

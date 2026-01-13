@@ -77,6 +77,7 @@ document.getElementById('create-network-btn').addEventListener('click', () => {
 document.getElementById('create-volume-form').addEventListener('submit', handleCreateVolume);
 document.getElementById('pull-image-form').addEventListener('submit', handlePullImage);
 document.getElementById('create-container-form').addEventListener('submit', handleCreateContainer);
+document.getElementById('create-network-form').addEventListener('submit', handleCreateNetwork);
 
 //Modal Functions
 function showModal(target) {
@@ -97,7 +98,7 @@ function showPullProgressModal(imageName) {
     document.getElementById('pull-progress-modal').classList.remove('hidden');
 }
 
-//Handle functions
+
 async function handleCreateVolume(e) {
     e.preventDefault();
 
@@ -105,7 +106,6 @@ async function handleCreateVolume(e) {
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
 
-    // Show loading state
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Volume...';
 
@@ -123,20 +123,16 @@ async function handleCreateVolume(e) {
     } catch (error) {
         console.error('Failed to create volume: ' + error.message);
     } finally {
-        // Reset button state
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
     }
 }
 
-
-
-function newupdatePullProgress(progress, layerProgress, maxTotalPercentage) {
+function updatePullProgress(progress, layerProgress, maxTotalPercentage) {
     const progressBar = document.getElementById('pull-progress-bar');
     const progressText = document.getElementById('pull-progress-text');
     const progressLog = document.getElementById('pull-progress-log');
 
-    // Aggiorna il testo e il log
     if (progress.status) {
         progressText.textContent = progress.id 
             ? `[${progress.id}] ${progress.status}` 
@@ -153,7 +149,6 @@ function newupdatePullProgress(progress, layerProgress, maxTotalPercentage) {
         progressLog.scrollTop = progressLog.scrollHeight;
     }
 
-    // avg real of the process
     if (progress.id && progress.progressDetail && progress.progressDetail.total) {
         const currentLayerPercent = (progress.progressDetail.current / progress.progressDetail.total) * 100;
 
@@ -187,11 +182,9 @@ async function handlePullImage(e) {
     let hasError = false;
 
     try {
-        // Close the pull image modal and show progress modal
         closeModal('pull-image-modal', 'pull-image-form');
         showPullProgressModal(imageData.imageName);
 
-        // Use streaming fetch for real-time updates
         const response = await fetch('/api/images/pull', {
             method: 'POST',
             headers: {
@@ -232,7 +225,7 @@ async function handlePullImage(e) {
                             throw new Error(progress.error);
                         }
 
-                        newupdatePullProgress(progress, layerProgress, maxTotalPercentage);
+                        updatePullProgress(progress, layerProgress, maxTotalPercentage);
                     } catch (parseError) {
                         if (parseError.message === progress?.error) throw parseError;
                             console.log('Parse error:', parseError, 'Line:', line);
@@ -271,7 +264,6 @@ async function handleCreateContainer(e) {
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
 
-    // Show loading state
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Container...';
 
@@ -314,13 +306,67 @@ async function handleCreateContainer(e) {
     } catch (error) {
         console.error('Failed to create container: ' + error.message);
     } finally {
-        // Reset button state
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
     }
 }
 
-//Contaner modal
+async function handleCreateNetwork(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+
+    const networkData = {
+        name: formData.get('name'),
+        driver: formData.get('driver')
+    };
+
+    const subnet = formData.get('subnet');
+    const gateway = formData.get('gateway');
+
+    if (subnet && subnet.trim() !== '') networkData.subnet = subnet;
+    if (gateway && gateway.trim() !== '') networkData.gateway = gateway;
+
+    const labelKeys = Array.from(form.querySelectorAll('input[name="label-key"]')).map(input => input.value);
+    const labelValues = Array.from(form.querySelectorAll('input[name="label-value"]')).map(input => input.value);
+    
+    const labels = {};
+    for (let i = 0; i < Math.min(labelKeys.length, labelValues.length); i++) {
+        const key = labelKeys[i].trim();
+        const value = labelValues[i].trim();
+        if (key) {
+            labels[key] = value;
+        }
+    }
+    
+    if (Object.keys(labels).length > 0) {
+        networkData.labels = labels;
+    }
+
+    try {
+        await apiManager.post('/api/networks', networkData);
+        
+        console.log('Network created successfully');
+        closeModal('create-network-modal', 'create-network-form');
+
+        if (typeof networksManager !== null) {
+            networksManager.loadNetworks();
+        }
+
+    } catch (error) {
+        console.error('Failed to create network: ' + error.message);
+        document.getElementById('network-error').innerHTML = `Failed to create network: ${error.message}`;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
 function addPortMapping() {
     const container = document.getElementById('port-mappings');
     const div = document.createElement('div');
@@ -359,7 +405,27 @@ function removeEnvVar(button) {
     button.parentElement.remove();
 }
 
-//Sort table
+function addNetworkLabel() {
+    const container = document.getElementById('network-labels');
+    const div = document.createElement('div');
+    div.className = 'flex space-x-2 mb-2';
+    div.innerHTML = `
+        <input type="text" name="label-key" placeholder="com.example.key"
+            class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <span class="self-center text-gray-300">=</span>
+        <input type="text" name="label-value" placeholder="value"
+            class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <button type="button" onclick="removeNetworkLabel(this)" class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function removeNetworkLabel(button) {
+    button.parentElement.remove();
+}
+
 document.querySelectorAll("th").forEach(elem => {
     elem.addEventListener("click", () => {
         switch (view) {

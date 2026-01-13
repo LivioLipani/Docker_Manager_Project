@@ -15,6 +15,79 @@ const getNetworks = async (req, res) => {
     }
 };
 
+const createNetwork = async (req, res) => {
+    try {
+        const { name, driver, subnet, gateway } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ message: 'Network name is required' });
+        }
+
+        const result = await DockerService.createNetwork({ 
+            name, 
+            driver, 
+            subnet, 
+            gateway 
+        });
+
+        res.status(201).json({
+            message: 'Network created successfully',
+            id: result.id,
+            warning: result.Warning || null
+        });
+
+    } catch (error) {
+        console.error('Controller Error - createNetwork:', error);
+
+        if (error.statusCode === 409) {
+            return res.status(409).json({ message: 'A network with this name already exists' });
+        }
+
+        res.status(500).json({ 
+            message: 'Failed to create network', 
+            error: error.message 
+        });
+    }
+};
+
+const deleteNetwork = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await DockerService.removeNetwork(id);
+        res.status(200).json({ message: 'Network deleted successfully' });
+    } catch (error) {
+        console.error('Controller Error - deleteNetwork:', error);
+
+        const dockerMessage = error.json?.message || error.message || '';
+
+        if (error.statusCode === 404) {
+            return res.status(404).json({ message: 'Network not found' });
+        }
+
+        const isNetworkInUse = 
+            error.statusCode === 409 || 
+            (error.statusCode === 403 && (dockerMessage.includes('in use') || dockerMessage.includes('active endpoints')));
+
+        if (isNetworkInUse) {
+            return res.status(409).json({ 
+                message: 'Cannot delete network: active containers are using it. Disconnect them first.' 
+            });
+        }
+
+        if (error.statusCode === 403) {
+             return res.status(403).json({ message: 'Cannot delete a pre-defined system network' });
+        }
+
+        res.status(500).json({ 
+            message: 'Failed to delete network', 
+            error: dockerMessage 
+        });
+    }
+};
+
 module.exports = {
-    getNetworks
+    getNetworks,
+    createNetwork,
+    deleteNetwork
 };

@@ -34,11 +34,9 @@ class SocketManager {
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
             if (error.message === 'Authentication error') {
-                AuthMan
-                ager.logout();
+                AuthManager.logout();
             }
         });
-        
         return this.socket;
     }
 

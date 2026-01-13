@@ -216,7 +216,6 @@ class ChartManager{
 
         this.socket.on('connect', () => {
             if(!this.isLogout){
-                console.log('Socket reconnected! Resubscribing...');
                 this.socket.emit('subscribe_system_stats');
             }
         });

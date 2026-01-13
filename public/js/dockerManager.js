@@ -10,7 +10,6 @@ function showDeleteConfirmation(message, onConfirm) {
 
     pendingDeleteAction = onConfirm;
 
-    // Bind the confirm button
     document.getElementById('confirm-delete-btn').onclick = () => {
         executeDelete();
     };
@@ -18,6 +17,7 @@ function showDeleteConfirmation(message, onConfirm) {
 
 function closeDeleteConfirmation() {
     document.getElementById('delete-confirmation-modal').classList.add('hidden');
+    document.getElementById('error-message-deleteConf').innerHTML = "";
     pendingDeleteAction = null;
 }
 
@@ -25,8 +25,6 @@ async function executeDelete() {
     if (pendingDeleteAction) {
         const confirmBtn = document.getElementById('confirm-delete-btn');
         const originalContent = confirmBtn.innerHTML;
-
-        // Show loading state
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Deleting...';
 
@@ -35,6 +33,7 @@ async function executeDelete() {
             closeDeleteConfirmation();
         } catch (error) {
             console.error('Delete action failed:', error);
+            document.getElementById('error-message-deleteConf').innerHTML = error.message;
         } finally {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalContent;
@@ -302,7 +301,6 @@ class NetworkManager{
     displayNetworks(networks) {
         const tbody = document.getElementById('networks-table');
 
-        // Controllo se l'array è vuoto
         if (!networks || networks.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">No networks found</td></tr>';
             return;
@@ -325,7 +323,7 @@ class NetworkManager{
                 ? `<button disabled class="text-red-400 opacity-60" title="System Network">
                      <i class="fas fa-trash-alt"></i>
                    </button>`
-                : `<button onclick="deleteNetwork('${network.id}')" class="cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-200" title="Remove Network">
+                : `<button onclick="networksManager.deleteNetwork('${network.id}', '${network.name}')" class="cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-200" title="Remove Network">
                      <i class="fas fa-trash-alt"></i>
                    </button>`;
 
@@ -357,15 +355,27 @@ class NetworkManager{
         }).join('');
     }
 
-    async deleteNetwork(id) {
-        showDeleteConfirmation(
-            'Are you sure you want to remove this network? This action cannot be undone.',
-            async () => {
-                await apiManager.remove(`/api/network/${id}?force=true`);
-                console.log('Network removed successfully');
-                this.loadContainers();
+    deleteNetwork(id, name) {
+        const message = `Are you sure you want to delete the network "${name}"? This action cannot be undone.`;
+
+        showDeleteConfirmation(message, async () => {
+            try {
+                await apiManager.remove(`/api/networks/${id}`);
+                
+                console.log(`Network ${name} deleted successfully`);
+                await this.loadNetworks();
+
+            } catch (error) {
+                const errorMsg = error.message || 'Unknown error';
+
+                if (errorMsg.includes('409')) {
+                    document.getElementById('error-message-deleteConf').innerHTML = 'Cannot delete network: It is currently in use by active containers. Please disconnect them first.';
+                } else {
+                    document.getElementById('error-message-deleteConf').innerHTML = `Failed to delete network: ${errorMsg}`;
+                }
+                throw error;
             }
-        );
+        });
     }
 }
 

@@ -112,6 +112,31 @@ class DockerService {
             throw error;
         }
     }
+    
+    static async createVolume(name, driver) {
+        try {
+        const volume = await docker.createVolume({ Name: name, Driver: driver });
+        return {
+            name: volume.Name,
+            success: true,
+            message: 'Volume created successfully'
+        };
+        } catch (error) {
+            console.error('Failed to create volume:', error);
+            throw error;
+        }
+    }
+
+    static async removeVolume(name, force = false) {
+        try {
+            const volume = docker.getVolume(name);
+            await volume.remove({ force });
+            return { success: true, message: 'Volume removed successfully' };
+        } catch (error) {
+            console.error('Failed to remove volume:', error);
+            throw error;
+        }
+    }
 
     static async getNetworks() {
         try {
@@ -137,27 +162,37 @@ class DockerService {
         }
     }
 
-    static async createVolume(name, driver = 'local') {
-        try {
-        const volume = await docker.createVolume({ Name: name, Driver: driver });
-        return {
-            name: volume.Name,
-            success: true,
-            message: 'Volume created successfully'
+    static async createNetwork(data) {
+        const networkOptions = {
+            Name: data.name,
+            Driver: data.driver || 'bridge', 
+            CheckDuplicate: true,
+            Attachable: true,
+            Labels: {
+                created_by: 'dashboard-manager'
+            }
         };
-        } catch (error) {
-            console.error('Failed to create volume:', error);
-            throw error;
-        }
-    }
 
-    static async removeVolume(name, force = false) {
+        if (data.subnet) {
+            const ipamConfig = {
+                Subnet: data.subnet
+            };
+
+            if (data.gateway) {
+                ipamConfig.Gateway = data.gateway;
+            }
+
+            networkOptions.IPAM = {
+                Driver: 'default',
+                Config: [ipamConfig]
+            };
+        }
+
         try {
-            const volume = docker.getVolume(name);
-            await volume.remove({ force });
-            return { success: true, message: 'Volume removed successfully' };
+            const network = await docker.createNetwork(networkOptions);
+            return network;
         } catch (error) {
-            console.error('Failed to remove volume:', error);
+            console.error('Failed to create a network: ', error);
             throw error;
         }
     }
@@ -206,20 +241,31 @@ class DockerService {
         }
     }
 
-  static async createContainer(options) {
-    try {
-        const container = await docker.createContainer(options);
-        return {
-            id: container.id.substring(0, 12),
-            fullId: container.id,
-            success: true,
-            message: 'Container created successfully'
-        };
-    } catch (error) {
-        console.error('Failed to create container:', error);
-        throw error;
+    static async createContainer(options) {
+        try {
+            const container = await docker.createContainer(options);
+            return {
+                id: container.id.substring(0, 12),
+                fullId: container.id,
+                success: true,
+                message: 'Container created successfully'
+            };
+        } catch (error) {
+            console.error('Failed to create container:', error);
+            throw error;
+        }
     }
-  }
+
+    static async removeNetwork(id) {
+        try {
+            const network = docker.getNetwork(id);
+            await network.remove();
+            return { message: 'Network removed successfully' };
+        } catch (error) {
+            console.error(`Failed to remove network (${id}):`, error);
+            throw error;
+        }
+    }
     
     static async getContainerStats(id) {
         try {
@@ -253,11 +299,9 @@ class DockerService {
             const memoryLimit = stats.memory_stats?.limit || 1;
             const memoryPercent = memoryLimit > 0 ? (memoryUsage / memoryLimit) * 100 : 0;
 
-            // Get network stats safely
             let networkRx = 0;
             let networkTx = 0;
             if (stats.networks) {
-                // Try different network interface names
                 const networkKeys = Object.keys(stats.networks);
                 if (networkKeys.length > 0) {
                     const firstNetwork = stats.networks[networkKeys[0]];
