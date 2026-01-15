@@ -67,7 +67,14 @@ class VolumesManager {
             <tr class="hover:bg-gray-700">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${volume.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.driver}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.mountpoint}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
+                    <div class="truncate">
+                        ${volume.mountpoint}
+                    </div>
+                    <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute left-4 -top-3 z-50 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-xl pointer-events-none">
+                        ${volume.mountpoint}
+                    </div>  
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.created ? formatDateTime(volume.created) : 'N/A'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <button onclick="volumesManager.removeVolume('${volume.name}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
@@ -178,7 +185,10 @@ class ContainerManager{
         }
 
         tbody.innerHTML = containers.map(container => {
-            
+            let uptime = container.status;
+
+            if(container.status.includes("Exited")) uptime = 0;
+
             return `
             <tr class="hover:bg-gray-700">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${container.name}</td>
@@ -197,7 +207,7 @@ class ContainerManager{
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-300">${this.formatPorts(container.ports)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(container.created)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${container.status}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${uptime}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
                     ${container.state === 'running' ?
                         `<button onclick="containerManager.stopContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Stop">
