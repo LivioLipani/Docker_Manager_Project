@@ -624,6 +624,25 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="mt-4 border-t border-gray-700 pt-4">
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                                        Driver Options 
+                                        <span class="text-xs text-gray-500 font-normal ml-1">(e.g. parent=eth0 for macvlan, com.docker.network.bridge.name=br0)</span>
+                                    </label>
+                                    
+                                    <div id="driver-options-container">
+                                        <div class="flex space-x-2 mb-2 option-row">
+                                            <input type="text" name="option-key" placeholder="Key (e.g. parent)"
+                                                class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <span class="self-center text-gray-300">=</span>
+                                            <input type="text" name="option-value" placeholder="Value (e.g. eth0)"
+                                                class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <button type="button" onclick="addDriverOption()" class="cursor-pointer px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div id="network-error" class="text-sm font-medium text-red-500"></div>
                             </div>
 
@@ -638,9 +657,41 @@
                 </div>
             </div>
 
+            <!--Connect Network Modal-->
+            <div id="connect-network-modal" class="fixed inset-0 bg-white/5 backdrop-blur-sm hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+                <div class="relative p-5 border w-full max-w-md mx-4 shadow-lg rounded-md bg-gray-800 border-gray-700">
+                    <h3 class="text-lg font-medium text-white mb-4">Connect Container to Network</h3>
+                    <form id="connect-network-form">
+                        <input type="hidden" name="networkId" id="connect-network-id">
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-400 mb-2">
+                                Network: <span id="connect-network-name-display" class="text-purple-400 font-bold"></span>
+                            </p>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Select Container</label>
+                            <select name="containerId" id="connect-container-select" required
+                                class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-purple-500">
+                                <option value="">Loading containers...</option>
+                            </select>
+                            <div id="error-network-connect" class="text-red-500 text-sm text-center break-words"></div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" onclick="closeModal('connect-network-modal', 'connect-network-form')"
+                                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
+                                Connect
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Pull Progress Modal -->
-            <div id="pull-progress-modal" class="fixed inset-0 bg-white/5 backdrop-blur-sm overflow-y-auto h-full w-full hidden">
-                <div class="relative top-20 mx-auto p-5 border-1 border-gray-700 w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-gray-800">
+            <div id="pull-progress-modal" class="fixed inset-0 bg-white/5 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-20 mx-auto p-5 border-1 border-gray-700 w-[350px] max-w-full shadow-lg rounded-md bg-gray-800">
                     <div class="mt-3">
                         <h3 class="text-lg font-medium text-white mb-4">Pulling Image</h3>
                         <div class="mb-4">

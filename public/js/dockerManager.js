@@ -187,7 +187,7 @@ class ContainerManager{
         tbody.innerHTML = containers.map(container => {
             let uptime = container.status;
 
-            if(container.status.includes("Exited")) uptime = 0;
+            if(container.status.includes("Exited") || container.status.includes("Created")) uptime = 0;
 
             return `
             <tr class="hover:bg-gray-700">
@@ -341,6 +341,14 @@ class NetworkManager{
                      <i class="fas fa-trash-alt"></i>
                    </button>`;
 
+            const connectBtn = isSystem 
+            ? ''
+            : `<button onclick="openConnectNetworkModal('${network.id}', '${network.name}')" 
+                    class="cursor-pointer text-blue-400 hover:text-blue-300 transition-colors duration-200 ml-2" 
+                    title="Connect Container">
+                <i class="fas fa-plug"></i>
+            </button>`;
+
             return `
             <tr class="hover:bg-gray-700/50 transition-colors duration-150">
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -362,6 +370,7 @@ class NetworkManager{
                     ${new Date(network.created).toLocaleDateString()}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    ${connectBtn}
                     ${deleteBtn}
                 </td>
             </tr>

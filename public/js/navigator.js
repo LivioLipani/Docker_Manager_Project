@@ -80,6 +80,8 @@ document.getElementById('pull-image-form').addEventListener('submit', handlePull
 document.getElementById('create-container-form').addEventListener('submit', handleCreateContainer);
 document.getElementById('create-network-form').addEventListener('submit', handleCreateNetwork);
 
+document.getElementById('connect-network-form').addEventListener('submit', handleConnectContainer);
+
 //Modal Functions
 function showModal(target) {
     document.getElementById(target).classList.remove('hidden');
@@ -362,6 +364,10 @@ async function handleCreateNetwork(e) {
     const subnet = formData.get('subnet');
     const gateway = formData.get('gateway');
 
+    const optKeys = form.querySelectorAll('input[name="option-key"]');
+    const optValues = form.querySelectorAll('input[name="option-value"]');
+    const driverOptions = {};
+
     if (subnet && subnet.trim() !== '') networkData.subnet = subnet;
     if (gateway && gateway.trim() !== '') networkData.gateway = gateway;
 
@@ -376,9 +382,22 @@ async function handleCreateNetwork(e) {
             labels[key] = value;
         }
     }
+
+    optKeys.forEach((keyInput, index) => {
+        const key = keyInput.value.trim();
+        const value = optValues[index].value.trim();
+        
+        if (key) {
+            driverOptions[key] = value;
+        }
+    });
     
     if (Object.keys(labels).length > 0) {
         networkData.labels = labels;
+    }
+
+    if (Object.keys(driverOptions).length > 0) {
+        networkData.driverOptions = driverOptions;
     }
 
     try {
@@ -512,3 +531,96 @@ const sortTables = (array, elem) => {
     return array;
 }
 
+async function openConnectNetworkModal(networkId, networkName) {
+    const modal = document.getElementById('connect-network-modal');
+    const nameDisplay = document.getElementById('connect-network-name-display');
+    const idInput = document.getElementById('connect-network-id');
+    const select = document.getElementById('connect-container-select');
+    document.getElementById("error-network-connect").innerHTML = "";
+
+    nameDisplay.textContent = networkName;
+    idInput.value = networkId;
+    select.innerHTML = '<option value="">Loading...</option>';
+    
+    modal.classList.remove('hidden');
+
+    try {
+        const containers = await apiManager.get('/api/containers');
+        select.innerHTML = '';
+        if (containers.length === 0) {
+            const opt = document.createElement('option');
+            opt.text = "No containers found";
+            select.add(opt);
+            return;
+        }
+
+        containers.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.id;
+            option.textContent = `${c.name} (${c.state})`; 
+            select.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Error loading containers:', error);
+        select.innerHTML = '<option value="">Error loading containers</option>';
+    }
+}
+
+async function handleConnectContainer(e) {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Connecting...';
+    const errorAllert = document.getElementById("error-network-connect"); 
+
+    const formData = new FormData(e.target);
+    const networkId = formData.get('networkId');
+    const containerId = formData.get('containerId');
+
+    try {
+        await apiManager.post(`/api/networks/${networkId}/connect`, { containerId });
+        
+        closeModal('connect-network-modal', 'connect-network-form');
+        
+        if (networksManager) networksManager.loadNetworks();
+
+    } catch (error) {
+        console.error('Connection failed:', error);
+        
+        const msg = error.message || 'Unknown error';
+
+        if (msg.includes('409') || msg.includes('already connected')) {
+            errorAllert.innerHTML = "Error: This container is already connected to this network."
+        } 
+        else if (msg.includes('Network not found')) {
+            errorAllert.innerHTML = "Error: This network no longer exists.";
+        } 
+        else {
+            errorAllert.innerHTML = `Failed to connect: ${msg}`
+        }
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+function addDriverOption() {
+    const container = document.getElementById('driver-options-container');
+    const div = document.createElement('div');
+    div.className = 'flex space-x-2 mb-2 option-row';
+    div.innerHTML = `
+        <input type="text" name="option-key" placeholder="Key (e.g. parent)"
+            class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <span class="self-center text-gray-300">=</span>
+        <input type="text" name="option-value" placeholder="Value (e.g. eth0)"
+            class="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <button type="button" onclick="this.parentElement.remove()" 
+            class="cursor-pointer px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}

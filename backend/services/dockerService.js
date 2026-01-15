@@ -271,13 +271,23 @@ class DockerService {
             throw error;
         }
     }
+
+    static async connectContainerToNetwork(networkId, containerId) {
+        try {
+            const network = docker.getNetwork(networkId);
+            await network.connect({ Container: containerId });
+            return true;
+        } catch (error) {
+            console.error(`DockerService Error - connectContainerToNetwork:`, error);
+            throw error;
+        }
+    }
     
     static async getContainerStats(id) {
         try {
             const container = docker.getContainer(id);
             const stats = await container.stats({ stream: false });
 
-            // Calculate CPU usage safely
             let cpuPercent = 0;
             if (stats.cpu_stats && stats.precpu_stats &&
                 stats.cpu_stats.cpu_usage && stats.precpu_stats.cpu_usage &&

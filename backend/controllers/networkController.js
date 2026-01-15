@@ -17,7 +17,7 @@ const getNetworks = async (req, res) => {
 
 const createNetwork = async (req, res) => {
     try {
-        const { name, driver, subnet, gateway, labels } = req.body;
+        const { name, driver, subnet, gateway, labels, driverOptions } = req.body;
 
         if (!name) {
             return res.status(400).json({ message: 'Network name is required' });
@@ -28,7 +28,8 @@ const createNetwork = async (req, res) => {
             driver, 
             subnet, 
             gateway,
-            labels 
+            labels,
+            driverOptions 
         });
 
         res.status(201).json({
@@ -48,6 +49,41 @@ const createNetwork = async (req, res) => {
             message: 'Failed to create network', 
             error: error.message 
         });
+    }
+};
+
+const connectContainer = async (req, res) => {
+    const { id } = req.params; // ID Network
+    const { containerId } = req.body;
+
+    if (!containerId) {
+        return res.status(400).json({ message: 'Container ID is required' });
+    }
+
+    try {
+        await DockerService.connectContainerToNetwork(id, containerId);
+        res.status(200).json({ message: 'Container connected to network successfully' });
+    } catch (error) {
+        console.error('Controller Error - connectContainer:', error);
+        
+        const dockerMsg = error.json?.message || error.message || '';
+
+        if (error.statusCode === 404) {
+            if (dockerMsg.includes('No such container')) {
+                return res.status(404).json({ message: 'The selected container does not exist anymore' });
+            }
+            return res.status(404).json({ message: 'Network not found' });
+        }
+
+        if (error.statusCode === 409 || dockerMsg.includes('already exists')) {
+            return res.status(409).json({ message: 'Container is already connected to this network' });
+        }
+
+        if (error.statusCode === 403) {
+            return res.status(403).json({ message: 'Operation not allowed on this network' });
+        }
+
+        res.status(500).json({ message: 'Failed to connect container', error: dockerMsg });
     }
 };
 
@@ -90,5 +126,6 @@ const deleteNetwork = async (req, res) => {
 module.exports = {
     getNetworks,
     createNetwork,
-    deleteNetwork
+    deleteNetwork,
+    connectContainer
 };
