@@ -33,6 +33,8 @@ class SocketManager {
 
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
+            document.getElementById('system-status').innerHTML = '<span class="text-red-500">Error</span>';
+
             if (error.message === 'Authentication error') {
                 AuthManager.logout();
             }

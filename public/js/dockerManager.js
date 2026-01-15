@@ -170,13 +170,16 @@ class ContainerManager{
 
     displayContainers(containers) {
         const tbody = document.getElementById('containers-table');
+        let uptime = "";
 
         if (containers.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">No containers found</td></tr>';
             return;
         }
 
-        tbody.innerHTML = containers.map(container => `
+        tbody.innerHTML = containers.map(container => {
+            
+            return `
             <tr class="hover:bg-gray-700">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${container.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
@@ -194,6 +197,7 @@ class ContainerManager{
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-300">${this.formatPorts(container.ports)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(container.created)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${container.status}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
                     ${container.state === 'running' ?
                         `<button onclick="containerManager.stopContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Stop">
@@ -210,8 +214,8 @@ class ContainerManager{
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
+        }).join('');
     }
 
     formatPorts(ports) {

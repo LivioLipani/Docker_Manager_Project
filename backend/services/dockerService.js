@@ -294,7 +294,6 @@ class DockerService {
                 }
             }
 
-            // Calculate memory usage safely
             const memoryUsage = stats.memory_stats?.usage || 0;
             const memoryLimit = stats.memory_stats?.limit || 1;
             const memoryPercent = memoryLimit > 0 ? (memoryUsage / memoryLimit) * 100 : 0;

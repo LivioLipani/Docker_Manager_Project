@@ -15,6 +15,7 @@ const showView = (target) => {
     document.getElementById('images-view').classList.add('hidden');
     document.getElementById('volumes-view').classList.add('hidden');
     document.getElementById('networks-view').classList.add('hidden');
+    document.getElementById('compose-view').classList.add('hidden');
     console.log(target);
 
     document.getElementById(`${target}-view`).classList.remove('hidden');
@@ -50,6 +51,9 @@ const navigateTo = (target) => {
             break;
         case "networks":
             networksManager.loadNetworks();
+            break;
+        case "compose":
+            
             break;
     }
 }
@@ -455,16 +459,22 @@ const sortTables = (array, elem) => {
     let text = elem.innerHTML;
     if(column != "none") text = text.substring(0, text.length - 1);
 
-    if(order == 'desc'){
-        if(column != "none"){
-            elem.setAttribute('data-sort', 'asc');
+    if(order == 'desc' && column != "none"){
+        elem.setAttribute('data-sort', 'asc');
+        if(column == "status"){
+            array = array.sort((a, b) => Number(a[column]?.match(/\d+/)?.[0] || 0) >= Number(b[column]?.match(/\d+/)?.[0] || 0) ? 1 : -1);
+            text += "&#9660";
+        }else{
             array = array.sort((a, b) => a[column] >= b[column] ? 1 : -1);
             text += "&#9660";
         }
-    }else{
-        if(column != "none"){
-            elem.setAttribute('data-sort', 'desc');
-            array = array.sort((a, b) => a[column] <= b[column] ? 1 : -1);
+    }else if(column != "none"){
+        elem.setAttribute('data-sort', 'desc');
+        if(column == "status"){
+            array = array.sort((a, b) => Number(a[column]?.match(/\d+/)?.[0] || 0) <= Number(b[column]?.match(/\d+/)?.[0] || 0) ? 1 : -1);
+            text += "&#9650";
+        }else{
+            array = array.sort((a, b) => a[column] < b[column] ? 1 : -1);
             text += "&#9650";
         }
     }
