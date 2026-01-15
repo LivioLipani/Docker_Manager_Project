@@ -66,6 +66,8 @@ document.getElementById('pull-image-btn').addEventListener('click', () => {
 });
 
 document.getElementById('create-container-btn').addEventListener('click', () => {
+    document.getElementById('error-create-container').innerHTML = ``;
+    populateNetworkSelect();
     showModal('create-container-modal');
 });
 
@@ -256,6 +258,36 @@ async function handlePullImage(e) {
     }
 }
 
+async function populateNetworkSelect() {
+    const select = document.getElementById('container-network-select');
+    
+    select.innerHTML = '<option>Loading...</option>';
+
+    try {
+        const networks = await apiManager.get('/api/networks');
+        
+        select.innerHTML = '';
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = 'bridge';
+        defaultOption.textContent = 'bridge (Default)';
+        select.appendChild(defaultOption);
+
+        networks.forEach(net => {
+            if (net.name !== 'bridge') {
+                const option = document.createElement('option');
+                option.value = net.name;
+                option.textContent = `${net.name} (${net.driver})`;
+                select.appendChild(option);
+            }
+        });
+
+    } catch (error) {
+        console.error('Failed to load networks for select:', error);
+        select.innerHTML = '<option value="bridge">bridge (Default)</option>';
+    }
+}
+
 async function handleCreateContainer(e) {
     e.preventDefault();
 
@@ -292,7 +324,8 @@ async function handleCreateContainer(e) {
         name: formData.get('name'),
         image: formData.get('image'),
         ports: ports,
-        env: env
+        env: env,
+        network: formData.get('network')
     };
 
     try {
@@ -304,6 +337,7 @@ async function handleCreateContainer(e) {
         }
     } catch (error) {
         console.error('Failed to create container: ' + error.message);
+        document.getElementById('error-create-container').innerHTML = `Failed to create container: ${error.message}`;
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;

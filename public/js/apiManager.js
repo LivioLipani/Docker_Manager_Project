@@ -106,8 +106,12 @@ class ApiManager {
                     window.location.href = '/login';
                     throw new Error('Unauthorized');
                 }
+
+                if (response.status === 404) {
+                    throw new Error("Image not found");
+                }
                 
-                throw new Error(error.error || 'Failed to create');
+                throw new Error(error || 'Failed to create');
             }
             
             const data = await response.json();

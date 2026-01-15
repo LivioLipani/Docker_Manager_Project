@@ -170,7 +170,6 @@ class DockerService {
         };
 
 
-
         const networkOptions = {
             Name: data.name,
             Driver: data.driver || 'bridge', 
@@ -203,7 +202,7 @@ class DockerService {
         }
     }
 
-     static async startContainer(id) {
+    static async startContainer(id) {
         try {
             const container = docker.getContainer(id);
             await container.start();

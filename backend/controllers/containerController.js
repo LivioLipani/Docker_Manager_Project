@@ -16,7 +16,7 @@ const createContainer = async (req, res) => {
       return res.status(403).json({ error: 'Admin access required to create containers' });
     }
 
-    const { name, image, ports, env, volumes } = req.body;
+    const { name, image, ports, env, volumes, network } = req.body;
 
     if (!name || !image) {
       return res.status(400).json({ error: 'Container name and image are required' });
@@ -29,7 +29,8 @@ const createContainer = async (req, res) => {
       ExposedPorts: {},
       HostConfig: {
         PortBindings: {},
-        Binds: volumes || []
+        Binds: volumes || [],
+        NetworkMode: network || 'bridge'
       }
     };
 
@@ -46,7 +47,9 @@ const createContainer = async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     console.error('Create container error:', error);
-    res.status(500).json({ error: 'Failed to create container' });
+    if(error.statusCode === 404){
+        res.status(404).json({ error: `no such image: ${image}`});
+    }else res.status(500).json({ error: 'Failed to create container' });
   }
 };
 
