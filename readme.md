@@ -132,6 +132,7 @@ Before running this application, ensure you have the following installed:
 - `GET /api/networks` - List all networks
 - `POST /api/networks` - Create a new network
 - `DELETE /api/networks/:id` - Remove a network
+- `POST /:id/connect` - connect a network to a container
 
 ### Health Check
 - `GET /health` - Application and Docker connection health status
