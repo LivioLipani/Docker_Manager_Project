@@ -17,7 +17,7 @@ const getNetworks = async (req, res) => {
 
 const createNetwork = async (req, res) => {
     try {
-        const { name, driver, subnet, gateway } = req.body;
+        const { name, driver, subnet, gateway, labels } = req.body;
 
         if (!name) {
             return res.status(400).json({ message: 'Network name is required' });
@@ -27,7 +27,8 @@ const createNetwork = async (req, res) => {
             name, 
             driver, 
             subnet, 
-            gateway 
+            gateway,
+            labels 
         });
 
         res.status(201).json({

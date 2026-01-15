@@ -163,14 +163,20 @@ class DockerService {
     }
 
     static async createNetwork(data) {
+        const finalLabels = {
+            ...(data.labels || {}),
+            'created_by': 'dashboard-manager', 
+            'created_at': new Date().toISOString()
+        };
+
+
+
         const networkOptions = {
             Name: data.name,
             Driver: data.driver || 'bridge', 
             CheckDuplicate: true,
             Attachable: true,
-            Labels: {
-                created_by: 'dashboard-manager'
-            }
+            Labels: finalLabels
         };
 
         if (data.subnet) {

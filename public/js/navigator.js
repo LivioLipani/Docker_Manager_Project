@@ -16,7 +16,6 @@ const showView = (target) => {
     document.getElementById('volumes-view').classList.add('hidden');
     document.getElementById('networks-view').classList.add('hidden');
     document.getElementById('compose-view').classList.add('hidden');
-    console.log(target);
 
     document.getElementById(`${target}-view`).classList.remove('hidden');
     updateNavigation(target);
@@ -58,17 +57,14 @@ const navigateTo = (target) => {
     }
 }
 
-// Create volume button
 document.getElementById('create-volume-btn').addEventListener('click', () => {
     showModal('create-volume-modal');
 });
 
-// Pull image button
 document.getElementById('pull-image-btn').addEventListener('click', () => {
     showModal('pull-image-modal');
 });
 
-//Create Container button
 document.getElementById('create-container-btn').addEventListener('click', () => {
     showModal('create-container-modal');
 });
@@ -77,7 +73,6 @@ document.getElementById('create-network-btn').addEventListener('click', () => {
     showModal('create-network-modal');
 });
 
-// Form submission handlers
 document.getElementById('create-volume-form').addEventListener('submit', handleCreateVolume);
 document.getElementById('pull-image-form').addEventListener('submit', handlePullImage);
 document.getElementById('create-container-form').addEventListener('submit', handleCreateContainer);
