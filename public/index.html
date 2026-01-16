@@ -773,6 +773,53 @@
             </div>
         </div>
 
+        <!--Create Stack Modal-->
+        <div id="create-stack-modal" class="fixed inset-0 bg-white/5 backdrop-blur-sm hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+            <div class="relative p-5 border w-full max-w-3xl mx-4 shadow-xl rounded-md bg-gray-800 border-gray-700">
+                
+                <div class="mt-2">
+                    <h3 class="text-lg font-medium text-white mb-4 flex items-center">
+                        <i class="fab fa-docker text-blue-400 mr-2"></i> Deploy New Stack
+                    </h3>
+                    
+                    <form id="create-stack-form">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Stack Name <span class="text-red-400">*</span></label>
+                            <input type="text" name="name" required placeholder="my-web-stack" pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, underscores and dashes allowed"
+                                class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-gray-300">Web Editor (docker-compose.yml)</label>
+                                <span class="text-xs text-gray-500 font-mono">YAML</span>
+                            </div>
+                            <textarea name="content" required spellcheck="false"
+                                class="w-full h-64 px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-green-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y leading-relaxed"
+                                placeholder="version: '3'&#10;services:&#10;  web:&#10;    image: nginx:latest&#10;    ports:&#10;      - '80:80'"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Make sure your YAML syntax is correct.</p>
+                        </div>
+
+                        <div id="stack-error" class="hidden mb-4 p-3 bg-red-900/40 border border-red-500/50 text-red-200 text-sm rounded flex items-start">
+                            <i class="fas fa-exclamation-circle mt-0.5 mr-2 flex-shrink-0"></i>
+                            <span id="stack-error-text"></span>
+                        </div>
+
+                        <div class="flex justify-end space-x-3 mt-6 border-t border-gray-700 pt-4">
+                            <button type="button" onclick="closeModal('create-stack-modal', 'create-stack-form')"
+                                class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-lg flex items-center focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-rocket mr-2"></i> Deploy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
         <script src="js/auth.js"></script>
         <script src="js/socketManager.js"></script>

@@ -52,7 +52,7 @@ const navigateTo = (target) => {
             networksManager.loadNetworks();
             break;
         case "compose":
-            
+            composeManager.loadStacks();
             break;
     }
 }

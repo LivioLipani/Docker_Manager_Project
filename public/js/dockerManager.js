@@ -403,3 +403,67 @@ class NetworkManager{
 }
 
 const networksManager = new NetworkManager();
+
+class ComposeManager{
+    constructor() {
+        this.stacks = null;
+    }
+
+    async loadStacks() {
+        try {
+            this.stacks = await apiManager.get('/api/stacks');
+            this.displayStacks(this.stacks);
+        } catch (error) {
+            console.error('Failed to load stacks:', error);
+            document.getElementById('stacks-table').innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Failed to load stacks: ${error.message}</td></tr>`;
+        }
+    }
+
+    displayStacks(stacks) {
+        const tbody = document.getElementById('stacks-table');
+
+        if (!stacks || stacks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">No active stacks found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = stacks.map(stack => {
+            const isRunning = stack.status === 'running';
+            const statusBadge = isRunning 
+                ? 'bg-green-100 text-green-800 border-green-200' 
+                : 'bg-gray-700 text-gray-300 border-gray-600';
+
+            return `
+            <tr class="hover:bg-gray-700/50 transition-colors duration-150 group">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-blue-900/30 flex items-center justify-center text-blue-400 mr-3">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <div class="text-sm font-medium text-white">${stack.name}</div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${statusBadge}">
+                        ${stack.status.toUpperCase()}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <span class="font-mono bg-gray-900 px-2 py-1 rounded text-xs border border-gray-700">
+                        ${stack.services} Services
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button onclick="stackManager.removeStack('${stack.name}')" 
+                        class="cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-200"
+                        title="Stop & Remove Stack">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    }
+}
+
+const composeManager = new ComposeManager();

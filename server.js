@@ -14,6 +14,7 @@ const containerRoutes = require('./backend/routes/containers');
 const imageRoutes = require('./backend/routes/images');
 const volumeRoutes = require('./backend/routes/volumes');
 const networkRoutes = require('./backend/routes/networks');
+const composeRoutes = require('./backend/routes/compose');
 
 const socketService = require('./backend/services/socketService');
 const dockerService = require('./backend/services/dockerService');
@@ -36,6 +37,7 @@ app.use('/api/containers', containerRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/volumes', volumeRoutes);
 app.use('/api/networks', networkRoutes);
+app.use('/api/stacks', composeRoutes);
 
 app.get('/health', async (req, res) => {
     try {

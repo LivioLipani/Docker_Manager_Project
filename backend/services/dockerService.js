@@ -341,4 +341,6 @@ class DockerService {
 
 }
 
+
+DockerService.docker = docker;
 module.exports = DockerService;
