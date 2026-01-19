@@ -127,7 +127,7 @@ class ImagesManager {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatBytes(image.size)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatDateTime(image.created)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <button onclick="imagesManager.removeImage('${image.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
+                    <button onclick="imagesManager.removeImage('${image.id}', '${image.tags[0]}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -135,9 +135,9 @@ class ImagesManager {
         `).join('');
     }
 
-    async removeImage(id) {
+    async removeImage(id, name) {
         showDeleteConfirmation(
-            'Are you sure you want to remove this image? This action cannot be undone.',
+            `Are you sure you want to remove this image "${name}"? This action cannot be undone.`,
             async () => {
                 await apiManager.remove(`/api/images/${id}?force=true`);
                 this.loadImages();
@@ -220,7 +220,7 @@ class ContainerManager{
                     <button onclick="containerManager.restartContainer('${container.id}')" class="cursor-pointer text-blue-400 hover:text-blue-300" title="Restart">
                         <i class="fas fa-redo"></i>
                     </button>
-                    <button onclick="containerManager.removeContainer('${container.id}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
+                    <button onclick="containerManager.removeContainer('${container.id}', '${container.name}')" class="cursor-pointer text-red-400 hover:text-red-300" title="Remove">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -283,9 +283,9 @@ class ContainerManager{
         }
     }
 
-    async removeContainer(id) {
+    async removeContainer(id, name) {
         showDeleteConfirmation(
-            'Are you sure you want to remove this container? This action cannot be undone.',
+            `Are you sure you want to remove this container "${name}"? This action cannot be undone.`,
             async () => {
                 await apiManager.remove(`/api/containers/${id}?force=true`);
                 console.log('Container removed successfully');
