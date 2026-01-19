@@ -81,7 +81,7 @@ document.getElementById('pull-image-form').addEventListener('submit', (e) => ima
 document.getElementById('create-container-form').addEventListener('submit', (e) => containerManager.handleCreateContainer(e));
 document.getElementById('create-network-form').addEventListener('submit', (e) => networksManager.handleCreateNetwork(e));
 
-document.getElementById('connect-network-form').addEventListener('submit', handleConnectContainer);
+document.getElementById('connect-network-form').addEventListener('submit', (e) => networksManager.handleConnectContainer(e));
 
 function showModal(target) {
     document.getElementById(target).classList.remove('hidden');
