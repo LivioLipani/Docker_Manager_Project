@@ -94,6 +94,34 @@ class VolumesManager {
             }
         );
     }
+
+    async handleCreateVolume(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Volume...';
+
+        const volumeData = {
+            name: formData.get('name'),
+            driver: formData.get('driver')
+        };
+
+        try {
+            apiManager.post('/api/volumes', volumeData);
+            closeModal('create-volume-modal', 'create-volume-form');
+            this.loadVolumes();
+        } catch (error) {
+            console.error('Failed to create volume: ' + error.message);
+        } finally {
+            
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
 }
 
 const volumesManager = new VolumesManager();
@@ -143,6 +171,135 @@ class ImagesManager {
                 this.loadImages();
             }
         );
+    }
+
+    async handlePullImage(e) {
+        e.preventDefault();
+        const progressBar = document.getElementById('pull-progress-bar');
+        const progressText = document.getElementById('pull-progress-text');
+        const closeBtn = document.getElementById('pull-progress-close-btn');
+
+        progressText.style.color = 'white';
+        progressBar.style.width = '0%';
+        closeBtn.disabled = true;
+
+        const formData = new FormData(e.target);
+        const imageData = { imageName: formData.get('image')};
+
+        let hasError = false;
+
+        try {
+            closeModal('pull-image-modal', 'pull-image-form');
+            showPullProgressModal(imageData.imageName);
+
+            const response = await fetch('/api/images/pull', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${AuthManager.getToken()}`
+                },
+                body: JSON.stringify(imageData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            let buffer = '';
+            const layerProgress = {};
+            
+            while (true) {
+                const { value, done } = await reader.read();
+
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+
+                for (const line of lines) {
+                    if (line.trim()) {
+                        try {
+                            let progress = JSON.parse(line);
+
+                            if (progress.error) {
+                                hasError = true;
+                                throw new Error(progress.error);
+                            }
+
+                            this.updatePullProgress(progress, layerProgress);
+                        } catch (parseError) {
+                            if (parseError.message === progress?.error) throw parseError;
+                            console.log('JSON Parse error:', line);
+                        }
+                    }
+                }
+            }
+
+            if (hasError) {
+                throw new Error("Error image download");
+            }
+
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('bg-blue-600');
+            progressBar.classList.add('bg-green-500');
+
+            progressText.textContent = 'Pull completed successfully!';
+            closeBtn.disabled = false;
+            this.loadImages();
+            
+        } catch (error) {
+            closeBtn.disabled = false;
+
+            let errorText = error.message;
+
+            if(error.message == 404) errorText = `image "${imageData.imageName}" not found`;
+            if(error.message == 500) errorText = "Internal sever error";
+
+            progressText.style.color = 'red';
+            progressText.textContent = 'Pull failed: ' + errorText;
+        }
+    }
+
+    updatePullProgress(progress, layerProgress) {
+        const progressBar = document.getElementById('pull-progress-bar');
+        const progressText = document.getElementById('pull-progress-text');
+        const progressLog = document.getElementById('pull-progress-log');
+
+        if (progress.status) {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'text-xs text-gray-400 font-mono';
+            logEntry.textContent = `> ${progress.status} ${progress.id || ''}`;
+            progressLog.appendChild(logEntry);
+            
+            progressLog.scrollTop = progressLog.scrollHeight;
+
+            if (!progress.progressDetail) {
+                progressText.textContent = progress.status;
+            }
+        }
+
+        if (progress.id && progress.progressDetail && progress.progressDetail.total) {
+            const current = progress.progressDetail.current || 0;
+            const total = progress.progressDetail.total || 1;
+            const percentage = (current / total) * 100;
+
+            layerProgress[progress.id] = percentage;
+
+            const values = Object.values(layerProgress);
+            if (values.length > 0) {
+                const totalAverage = values.reduce((a, b) => a + b, 0) / values.length;
+                
+                if (progressBar.style.width !== '100%') {
+                    progressBar.style.width = `${Math.round(totalAverage)}%`;
+                    progressText.textContent = `Downloading... ${Math.round(totalAverage)}%`;
+                }
+            }
+        }
     }
 }
 
@@ -226,6 +383,62 @@ class ContainerManager{
                 </td>
             </tr>`;
         }).join('');
+    }
+
+    async handleCreateContainer(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Container...';
+
+        const hostPorts = Array.from(document.querySelectorAll('input[name="host-port"]')).map(input => input.value).filter(v => v);
+        const containerPorts = Array.from(document.querySelectorAll('input[name="container-port"]')).map(input => input.value).filter(v => v);
+        const envKeys = Array.from(document.querySelectorAll('input[name="env-key"]')).map(input => input.value).filter(v => v);
+        const envValues = Array.from(document.querySelectorAll('input[name="env-value"]')).map(input => input.value).filter(v => v);
+
+        const ports = [];
+        for (let i = 0; i < Math.min(hostPorts.length, containerPorts.length); i++) {
+            if (hostPorts[i] && containerPorts[i]) {
+                ports.push({
+                    host: parseInt(hostPorts[i]),
+                    container: parseInt(containerPorts[i])
+                });
+            }
+        }
+
+        const env = [];
+        for (let i = 0; i < Math.min(envKeys.length, envValues.length); i++) {
+            if (envKeys[i] && envValues[i]) {
+                env.push(`${envKeys[i]}=${envValues[i]}`);
+            }
+        }
+
+        const containerData = {
+            name: formData.get('name'),
+            image: formData.get('image'),
+            ports: ports,
+            env: env,
+            network: formData.get('network')
+        };
+
+        try {
+            await apiManager.post('/api/containers', containerData);
+            console.log('Container created successfully');
+            closeModal('create-container-modal', 'create-container-form');
+
+            this.loadContainers();
+            
+        } catch (error) {
+            console.error('Failed to create container: ' + error.message);
+            document.getElementById('error-create-container').innerHTML = `Failed to create container: ${error.message}`;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
     }
 
     formatPorts(ports) {
@@ -343,7 +556,7 @@ class NetworkManager{
 
             const connectBtn = isSystem 
             ? ''
-            : `<button onclick="openConnectNetworkModal('${network.id}', '${network.name}')" 
+            : `<button onclick="networksManager.openConnectNetworkModal('${network.id}', '${network.name}')" 
                     class="cursor-pointer text-blue-400 hover:text-blue-300 transition-colors duration-200 ml-2" 
                     title="Connect Container">
                 <i class="fas fa-plug"></i>
@@ -399,6 +612,155 @@ class NetworkManager{
                 throw error;
             }
         });
+    }
+
+    async handleCreateNetwork(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+
+        const networkData = {
+            name: formData.get('name'),
+            driver: formData.get('driver')
+        };
+
+        const subnet = formData.get('subnet');
+        const gateway = formData.get('gateway');
+
+        const optKeys = form.querySelectorAll('input[name="option-key"]');
+        const optValues = form.querySelectorAll('input[name="option-value"]');
+        const driverOptions = {};
+
+        if (subnet && subnet.trim() !== '') networkData.subnet = subnet;
+        if (gateway && gateway.trim() !== '') networkData.gateway = gateway;
+
+        const labelKeys = Array.from(form.querySelectorAll('input[name="label-key"]')).map(input => input.value);
+        const labelValues = Array.from(form.querySelectorAll('input[name="label-value"]')).map(input => input.value);
+        
+        const labels = {};
+        for (let i = 0; i < Math.min(labelKeys.length, labelValues.length); i++) {
+            const key = labelKeys[i].trim();
+            const value = labelValues[i].trim();
+            if (key) {
+                labels[key] = value;
+            }
+        }
+
+        optKeys.forEach((keyInput, index) => {
+            const key = keyInput.value.trim();
+            const value = optValues[index].value.trim();
+            
+            if (key) {
+                driverOptions[key] = value;
+            }
+        });
+        
+        if (Object.keys(labels).length > 0) {
+            networkData.labels = labels;
+        }
+
+        if (Object.keys(driverOptions).length > 0) {
+            networkData.driverOptions = driverOptions;
+        }
+
+        try {
+            await apiManager.post('/api/networks', networkData);
+            
+            console.log('Network created successfully');
+            closeModal('create-network-modal', 'create-network-form');
+
+            if (typeof networksManager !== null) {
+                this.loadNetworks();
+            }
+
+        } catch (error) {
+            console.error('Failed to create network: ' + error.message);
+            document.getElementById('network-error').innerHTML = `Failed to create network: ${error.message}`;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    async openConnectNetworkModal(networkId, networkName) {
+        const modal = document.getElementById('connect-network-modal');
+        const nameDisplay = document.getElementById('connect-network-name-display');
+        const idInput = document.getElementById('connect-network-id');
+        const select = document.getElementById('connect-container-select');
+        document.getElementById("error-network-connect").innerHTML = "";
+
+        nameDisplay.textContent = networkName;
+        idInput.value = networkId;
+        select.innerHTML = '<option value="">Loading...</option>';
+
+        modal.classList.remove('hidden');
+
+        try {
+            const containers = await apiManager.get('/api/containers');
+            select.innerHTML = '';
+            if (containers.length === 0) {
+                const opt = document.createElement('option');
+                opt.text = "No containers found";
+                select.add(opt);
+                return;
+            }
+
+            containers.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.id;
+                option.textContent = `${c.name} (${c.state})`;
+                select.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error loading containers:', error);
+            select.innerHTML = '<option value="">Error loading containers</option>';
+        }
+    }
+
+    async handleConnectContainer(e) {
+        e.preventDefault();
+        
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Connecting...';
+        const errorAllert = document.getElementById("error-network-connect"); 
+
+        const formData = new FormData(e.target);
+        const networkId = formData.get('networkId');
+        const containerId = formData.get('containerId');
+
+        try {
+            await apiManager.post(`/api/networks/${networkId}/connect`, { containerId });
+            
+            closeModal('connect-network-modal', 'connect-network-form');
+            
+            this.loadNetworks();
+
+        } catch (error) {
+            console.error('Connection failed:', error);
+            
+            const msg = error.message || 'Unknown error';
+
+            if (msg.includes('409') || msg.includes('already connected')) {
+                errorAllert.innerHTML = "Error: This container is already connected to this network."
+            } 
+            else if (msg.includes('Network not found')) {
+                errorAllert.innerHTML = "Error: This network no longer exists.";
+            } 
+            else {
+                errorAllert.innerHTML = `Failed to connect: ${msg}`
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
     }
 }
 
