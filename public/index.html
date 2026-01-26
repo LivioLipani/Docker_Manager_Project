@@ -357,7 +357,7 @@
                                         <tr>
                                             <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "name" data-sort = "desc">Name &#9650</th>
                                             <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "driver" data-sort = "desc">Driver &#9650</th>
-                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "none" data-sort = "desc">Attached Containers</th>
+                                            <th class="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider">Containers</th>
                                             <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "scope" data-sort = "desc">Scope &#9650</th>
                                             <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "subnet" data-sort = "desc">Subnet / Gateway &#9650</th>
                                             <th class="cursor-pointer px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-400 uppercase tracking-wider" data-collumn = "created" data-sort = "desc">Created &#9650</th>
@@ -475,7 +475,7 @@
                                     <label class="block text-sm font-medium text-gray-300 mb-1">Image</label>
                                     <select name="image" id="container-image-select" 
                                         class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="chicco">select a image</option>
+                                        <option value="none">select a image</option>
                                     </select>
                                 </div>
                                 <div class="mb-4">
@@ -512,7 +512,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id = "error-create-container" class="text-sm font-medium text-red-500"></div>
+                            <div id="create-container-error" class="hidden mb-4 p-3 bg-red-900/40 border border-red-500/50 text-red-200 text-left text-sm rounded flex items-start">
+                                <i class="fas fa-exclamation-circle mt-0.5 mr-2 flex-shrink-0"></i>
+                                <span id="create-container-error-text"></span>
+                            </div>
                             <div class="flex justify-end space-x-2 mt-6">
                                 <button type="button" onclick="closeModal('create-container-modal', 'create-container-form')"
                                     class="cursor-pointer px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">Cancel</button>

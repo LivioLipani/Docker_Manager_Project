@@ -104,12 +104,10 @@ class ApiManager {
                 throw new Error(data.message);
             }
             
-            
             console.log('created successfully:', data);
             return data;
             
         } catch (error) {
-            console.error(error.message);
             throw error;
         }
     };

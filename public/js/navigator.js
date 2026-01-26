@@ -126,27 +126,22 @@ document.getElementById('pull-image-btn').addEventListener('click', () => {
 });
 
 document.getElementById('create-container-btn').addEventListener('click', () => {
-    document.getElementById('error-create-container').innerHTML = ``;
+    document.getElementById('create-container-error').classList.add('hidden');
     populateImageSelect();
     populateNetworkSelect();
     showModal('create-container-modal');
 });
 
 document.getElementById('create-network-btn').addEventListener('click', () => {
+    document.getElementById('network-error').add("hidden");
     showModal('create-network-modal');
 });
 
 document.getElementById('create-volume-form').addEventListener('submit',(e) => volumesManager.handleCreateVolume(e));
 document.getElementById('pull-image-form').addEventListener('submit', (e) => imagesManager.handlePullImage(e));
 document.getElementById('create-container-form').addEventListener('submit', (e) => containerManager.handleCreateContainer(e));
-document.getElementById('create-network-form').addEventListener('submit', (e) => {
-    document.getElementById('network-error').add("hidden");
-    networksManager.handleCreateNetwork(e)
-});
-document.getElementById('connect-network-form').addEventListener('submit', (e) => {
-    networksManager.handleConnectContainer(e)
-    document.getElementById('network-connect-error').add("hidden");
-});
+document.getElementById('create-network-form').addEventListener('submit', (e) => networksManager.handleCreateNetwork(e));
+document.getElementById('connect-network-form').addEventListener('submit', (e) => networksManager.handleConnectContainer(e));
 document.getElementById('create-stack-form').addEventListener('submit', (e) => composeManager.handleDeploy(e));
 
 function showModal(target) {
@@ -208,12 +203,12 @@ async function populateImageSelect() {
         select.innerHTML = '';
 
         const defaultOption = document.createElement('option');
-        defaultOption.value = 'chicco';
+        defaultOption.value = 'none';
         defaultOption.textContent = 'select a image';
         select.appendChild(defaultOption);
 
         images.forEach(im => {
-            if (im.name !== 'chicco') {
+            if (im.name !== 'none') {
                 const option = document.createElement('option');
                 option.value = im.tags[0];
                 option.textContent = `${im.tags[0]}`;
@@ -223,7 +218,7 @@ async function populateImageSelect() {
 
     } catch (error) {
         console.error('Failed to load images for select:', error);
-        select.innerHTML = '<option value="chicco">select a image</option>';
+        select.innerHTML = '<option value="none">select a image</option>';
     }
 }
 

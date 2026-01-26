@@ -398,6 +398,8 @@ class ContainerManager{
         const formData = new FormData(e.target);
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        const errorEl = document.getElementById('create-container-error');
+        const errorText = document.getElementById('create-container-error-text');
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Container...';
@@ -440,8 +442,9 @@ class ContainerManager{
             this.loadContainers();
             
         } catch (error) {
-            console.error('Failed to create container: ' + error.message);
-            document.getElementById('error-create-container').innerHTML = `Failed to create container: ${error.message}`;
+            console.error('Failed to create container: ' + error);
+            errorText.textContent = `Failed to create container: ${error.message}`;
+            errorEl.classList.remove('hidden');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -545,8 +548,41 @@ class NetworkManager{
             const subnet = ipConfig.Subnet || 'N/A';
             const gateway = ipConfig.Gateway || '';
 
+            const containersMap = network.containers || {};
+            console.log(containersMap);
+            const containerKeys = Object.keys(containersMap);
+
+            let containersHtml = '';
+
+            if (containerKeys.length === 0) {
+                    containersHtml = '<span class="text-xs text-gray-600 italic">No containers</span>';
+            } else {
+                containersHtml = containerKeys.map(key => {
+                    const containerInfo = containersMap[key];
+                    const cleanName = containerInfo.Name ? containerInfo.Name.replace(/^\//, '') : key.substring(0, 12);
+                        
+                    return `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-200 border border-blue-800 mr-1 mb-1">
+                            <i class="fas fa-box mr-1 opacity-50"></i>${cleanName}
+                        </span>
+                    `;
+                }).join('');
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-700/50 transition-colors duration-150';
+
             const systemNetworks = ['bridge', 'host', 'none'];
             
+            let subnetInfo = '<span class="text-gray-500">-</span>';
+            if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
+                const config = network.IPAM.Config[0];
+                subnetInfo = `
+                    <div class="text-sm text-gray-300">${config.Subnet || '-'}</div>
+                    <div class="text-xs text-gray-500">${config.Gateway || ''}</div>
+                `;
+            }
+
             const ipInfo = gateway 
                 ? `${subnet} <br> <span class="text-xs text-gray-500">${gateway}</span>` 
                 : subnet;
@@ -579,6 +615,11 @@ class NetworkManager{
                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                         ${network.driver}
                     </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex flex-wrap max-w-xs">
+                        ${containersHtml}
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     ${network.scope}

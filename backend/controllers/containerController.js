@@ -13,13 +13,13 @@ const getContainers = async (req, res) => {
 const createContainer = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required to create containers' });
+      return res.status(403).json({ message: 'Admin access required to create containers' });
     }
 
     const { name, image, ports, env, volumes, network } = req.body;
 
-    if (!name || !image) {
-      return res.status(400).json({ error: 'Container name and image are required' });
+    if (!name || image === "none") {
+      return res.status(400).json({ message: 'container name and image are required' });
     }
 
     const createOptions = {
@@ -47,9 +47,7 @@ const createContainer = async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     console.error('Create container error:', error);
-    if(error.statusCode === 404){
-        res.status(404).json({ error: `no such image: ${image}`});
-    }else res.status(500).json({ error: 'Failed to create container' });
+    error.status(500).json({ message: 'Failed to create container' });
   }
 };
 

@@ -140,22 +140,55 @@ class DockerService {
 
     static async getNetworks() {
         try {
-            const networks = await docker.listNetworks();
-            return networks.map(network => ({
-                id: network.Id.substring(0, 12),
-                fullId: network.Id,
-                name: network.Name,
-                driver: network.Driver,
-                scope: network.Scope,
-                internal: network.Internal,
-                attachable: network.Attachable,
-                created: new Date(network.Created), 
-                ipam: {
-                    driver: network.IPAM?.Driver || 'default',
-                    config: network.IPAM?.Config || [] 
-                },
-                labels: network.Labels || {}
-            }));
+            const [networks, containers] = await Promise.all([
+                docker.listNetworks(),
+                docker.listContainers({ all: true })
+            ]);
+
+            const networkMap = {};
+
+            containers.forEach(container => {
+                if(container.NetworkSettings && container.NetworkSettings.Networks){
+                    const networksInfo = container.NetworkSettings.Networks;
+
+                    Object.keys(networksInfo).forEach(networkName => {
+                        const netInfo = networksInfo[networkName];
+                        const networkId = netInfo.NetworkID;
+
+                        if (!networkMap[networkId]) {
+                            networkMap[networkId] = {};
+                        }
+
+                        networkMap[networkId][container.Id] = {
+                            Name: container.Names[0] || container.Id,
+                            IPv4Address: netInfo.IPAddress,
+                            MacAddress: netInfo.MacAddress
+                        };
+                    });
+                }
+            })
+
+            return networks.map(network => {
+
+                const calculatedContainers = networkMap[network.Id] || {};
+                
+                return {
+                    id: network.Id.substring(0, 12),
+                    fullId: network.Id,
+                    name: network.Name,
+                    driver: network.Driver,
+                    scope: network.Scope,
+                    internal: network.Internal,
+                    attachable: network.Attachable,
+                    created: new Date(network.Created), 
+                    containers: calculatedContainers,
+                    ipam: {
+                        driver: network.IPAM?.Driver || 'default',
+                        config: network.IPAM?.Config || [] 
+                    },
+                    labels: network.Labels || {}
+                };
+            });
         } catch (error) {
             console.error('Failed to get networks:', error);
             throw error;
