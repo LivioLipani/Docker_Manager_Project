@@ -137,6 +137,8 @@ Before running this application, ensure you have the following installed:
 
 ### Compose
 - `GET /api/stacks` - List all Stacks(compose)
+- `POST /api/stacks` - deploy a compose
+- `DELETE /api/stacks/:name` - Remove a compose
 
 ### Health Check
 - `GET /health` - Application and Docker connection health status

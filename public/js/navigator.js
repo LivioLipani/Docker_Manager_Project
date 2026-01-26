@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleIcon.classList.remove('fa-chevron-left');
             toggleIcon.classList.add('fa-chevron-right');
 
+            toggleBtn.classList.remove('ml-3');
+
         } else {
             sidebar.classList.remove('w-20');
             sidebar.classList.add('w-64');
@@ -49,6 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
             toggleIcon.classList.remove('fa-chevron-right');
             toggleIcon.classList.add('fa-chevron-left');
+
+
+            toggleBtn.classList.add('ml-3');
         }
     });
 });
@@ -134,8 +139,15 @@ document.getElementById('create-network-btn').addEventListener('click', () => {
 document.getElementById('create-volume-form').addEventListener('submit',(e) => volumesManager.handleCreateVolume(e));
 document.getElementById('pull-image-form').addEventListener('submit', (e) => imagesManager.handlePullImage(e));
 document.getElementById('create-container-form').addEventListener('submit', (e) => containerManager.handleCreateContainer(e));
-document.getElementById('create-network-form').addEventListener('submit', (e) => networksManager.handleCreateNetwork(e));
-document.getElementById('connect-network-form').addEventListener('submit', (e) => networksManager.handleConnectContainer(e));
+document.getElementById('create-network-form').addEventListener('submit', (e) => {
+    document.getElementById('network-error').add("hidden");
+    networksManager.handleCreateNetwork(e)
+});
+document.getElementById('connect-network-form').addEventListener('submit', (e) => {
+    networksManager.handleConnectContainer(e)
+    document.getElementById('network-connect-error').add("hidden");
+});
+document.getElementById('create-stack-form').addEventListener('submit', (e) => composeManager.handleDeploy(e));
 
 function showModal(target) {
     document.getElementById(target).classList.remove('hidden');

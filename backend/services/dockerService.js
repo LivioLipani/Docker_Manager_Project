@@ -93,7 +93,7 @@ class DockerService {
             return { success: true, message: 'Image removed successfully' };
         } catch (error) {
             console.error('Failed to remove image:', error);
-        throw error;
+            throw error;
         }
     }
 

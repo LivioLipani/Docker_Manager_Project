@@ -7,6 +7,7 @@ let pendingDeleteAction = null;
 function showDeleteConfirmation(message, onConfirm) {
     document.getElementById('delete-confirmation-message').textContent = message;
     document.getElementById('delete-confirmation-modal').classList.remove('hidden');
+    document.getElementById('error-deleteConf').classList.add('hidden');
 
     pendingDeleteAction = onConfirm;
 
@@ -22,6 +23,11 @@ function closeDeleteConfirmation() {
 }
 
 async function executeDelete() {
+    const errorEl = document.getElementById('error-deleteConf');
+    const errorText = document.getElementById('error-deleteConf-text');
+
+    errorEl.classList.add("hidden");
+
     if (pendingDeleteAction) {
         const confirmBtn = document.getElementById('confirm-delete-btn');
         const originalContent = confirmBtn.innerHTML;
@@ -33,7 +39,8 @@ async function executeDelete() {
             closeDeleteConfirmation();
         } catch (error) {
             console.error('Delete action failed:', error);
-            document.getElementById('error-message-deleteConf').innerHTML = error.message;
+            errorText.textContent = error.message;
+            errorEl.classList.remove('hidden');
         } finally {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalContent;
@@ -602,13 +609,6 @@ class NetworkManager{
                 await this.loadNetworks();
 
             } catch (error) {
-                const errorMsg = error.message || 'Unknown error';
-
-                if (errorMsg.includes('409')) {
-                    document.getElementById('error-message-deleteConf').innerHTML = 'Cannot delete network: It is currently in use by active containers. Please disconnect them first.';
-                } else {
-                    document.getElementById('error-message-deleteConf').innerHTML = `Failed to delete network: ${errorMsg}`;
-                }
                 throw error;
             }
         });
@@ -620,6 +620,8 @@ class NetworkManager{
         const formData = new FormData(form);
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        const errorEl = document.getElementById('network-error');
+        const errorText = document.getElementById('network-error-text');
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
@@ -680,7 +682,8 @@ class NetworkManager{
 
         } catch (error) {
             console.error('Failed to create network: ' + error.message);
-            document.getElementById('network-error').innerHTML = `Failed to create network: ${error.message}`;
+            errorText.textContent = `Failed to create network: ${error.message}`;
+            errorEl.classList.remove("hidden");
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -692,7 +695,7 @@ class NetworkManager{
         const nameDisplay = document.getElementById('connect-network-name-display');
         const idInput = document.getElementById('connect-network-id');
         const select = document.getElementById('connect-container-select');
-        document.getElementById("error-network-connect").innerHTML = "";
+        document.getElementById('network-connect-error').classList.add("hidden");
 
         nameDisplay.textContent = networkName;
         idInput.value = networkId;
@@ -724,13 +727,14 @@ class NetworkManager{
     }
 
     async handleConnectContainer(e) {
+        const errorEl = document.getElementById('network-connect-error');
+        const errorText = document.getElementById('network-connect-error-text');
         e.preventDefault();
         
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Connecting...';
-        const errorAllert = document.getElementById("error-network-connect"); 
 
         const formData = new FormData(e.target);
         const networkId = formData.get('networkId');
@@ -749,14 +753,15 @@ class NetworkManager{
             const msg = error.message || 'Unknown error';
 
             if (msg.includes('409') || msg.includes('already connected')) {
-                errorAllert.innerHTML = "Error: This container is already connected to this network."
+                errorText.textContent = "Error: This container is already connected to this network.";
             } 
             else if (msg.includes('Network not found')) {
-                errorAllert.innerHTML = "Error: This network no longer exists.";
+                errorText.textContent = "Error: This network no longer exists.";
             } 
             else {
-                errorAllert.innerHTML = `Failed to connect: ${msg}`
+                errorText.textContent = `Failed to connect: ${msg}`;
             }
+            errorEl.classList.remove("hidden");
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -816,7 +821,7 @@ class ComposeManager{
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <button onclick="stackManager.removeStack('${stack.name}')" 
+                    <button onclick="composeManager.removeStack('${stack.name}')" 
                         class="cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-200"
                         title="Stop & Remove Stack">
                         <i class="fas fa-trash-alt"></i>
@@ -825,6 +830,64 @@ class ComposeManager{
             </tr>
             `;
         }).join('');
+    }
+
+    async handleDeploy(e) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        const errorEl = document.getElementById('stack-error');
+        const errorText = document.getElementById('stack-error-text');
+
+        errorEl.classList.add('hidden');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deploying...';
+
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('name'),
+            content: formData.get('content')
+        };
+
+        try {
+            await apiManager.post('/api/stacks', data);
+            
+            console.log('Stack deployed successfully');
+            closeModal('create-stack-modal', 'create-stack-form');
+            
+            this.loadStacks();
+            containerManager.loadContainers();
+            networksManager.loadNetworks();
+            volumesManager.loadVolumes();
+
+        } catch (error) {
+            console.error('Deployment failed:', error.message);
+            
+            errorText.textContent = error.message;
+            errorEl.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    removeStack(name) {
+        const message = `Are you sure you want to delete stack "${name}"? \n\nThis will execute 'docker compose down' removing all containers and networks associated with this stack.`;
+
+        showDeleteConfirmation(message, async () => {
+            try {
+                await apiManager.remove(`/api/stacks/${name}`);
+                console.log(`Stack ${name} removed`);
+                
+                await this.loadStacks();
+                if (typeof containerManager !== 'undefined') containerManager.loadContainers();
+            
+            } catch (error) {
+                throw new Error(`Failed to remove stack: ${error.message}`);
+            }
+        });
     }
 }
 
