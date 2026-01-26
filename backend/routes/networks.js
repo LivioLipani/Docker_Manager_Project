@@ -7,5 +7,6 @@ router.get('/', authenticateToken, networkController.getNetworks);
 router.post('/', authenticateToken, networkController.createNetwork);
 router.delete('/:id', authenticateToken, networkController.deleteNetwork);
 router.post('/:id/connect', authenticateToken, networkController.connectContainer);
+router.post('/:id/disconnect', networkController.disconnectContainer);
 
 module.exports = router;

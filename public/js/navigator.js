@@ -133,7 +133,7 @@ document.getElementById('create-container-btn').addEventListener('click', () => 
 });
 
 document.getElementById('create-network-btn').addEventListener('click', () => {
-    document.getElementById('network-error').add("hidden");
+    document.getElementById('network-error').classList.add("hidden");
     showModal('create-network-modal');
 });
 

@@ -315,6 +315,17 @@ class DockerService {
             throw error;
         }
     }
+
+    static async disconnectContainerFromNetwork(networkId, containerId) {
+        try {
+            const network = docker.getNetwork(networkId);
+            await network.disconnect({ Container: containerId, Force: false });
+            return true;
+        } catch (error) {
+            console.error(`DockerService Error - disconnectContainerFromNetwork:`, error);
+            throw error;
+        }
+    }
     
     static async getContainerStats(id) {
         try {

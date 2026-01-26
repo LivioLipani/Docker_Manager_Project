@@ -18,7 +18,7 @@ function showDeleteConfirmation(message, onConfirm) {
 
 function closeDeleteConfirmation() {
     document.getElementById('delete-confirmation-modal').classList.add('hidden');
-    document.getElementById('error-message-deleteConf').innerHTML = "";
+    document.getElementById('error-message-deleteConf').classList.add('hidden');
     pendingDeleteAction = null;
 }
 
@@ -72,7 +72,14 @@ class VolumesManager {
 
         tbody.innerHTML = volumes.map(volume => `
             <tr class="hover:bg-gray-700">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${volume.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
+                    <div class="truncate">
+                        ${volume.name}
+                    </div>
+                    <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute left-4 -top-3 z-50 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-xl pointer-events-none">
+                        ${volume.name}
+                    </div>  
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.driver}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
                     <div class="truncate">
@@ -549,10 +556,10 @@ class NetworkManager{
             const gateway = ipConfig.Gateway || '';
 
             const containersMap = network.containers || {};
-            console.log(containersMap);
             const containerKeys = Object.keys(containersMap);
 
             let containersHtml = '';
+            const systemNetworks = ['bridge', 'host', 'none'];
 
             if (containerKeys.length === 0) {
                     containersHtml = '<span class="text-xs text-gray-600 italic">No containers</span>';
@@ -560,10 +567,20 @@ class NetworkManager{
                 containersHtml = containerKeys.map(key => {
                     const containerInfo = containersMap[key];
                     const cleanName = containerInfo.Name ? containerInfo.Name.replace(/^\//, '') : key.substring(0, 12);
+
+                    const disconnectBtn =`
+                        <button id='diconnect-btn' onclick="event.stopPropagation(); networksManager.disconnectContainer('${network.id}', '${key}', '${cleanName}')" 
+                            class="ml-1 text-blue-300 hover:text-red-400 focus:outline-none transition-colors" 
+                            title="Disconnect ${cleanName}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
                         
                     return `
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-200 border border-blue-800 mr-1 mb-1">
-                            <i class="fas fa-box mr-1 opacity-50"></i>${cleanName}
+                            <i class="fas fa-box mr-1 opacity-50"></i>
+                            ${cleanName}
+                            ${disconnectBtn}
                         </span>
                     `;
                 }).join('');
@@ -571,8 +588,6 @@ class NetworkManager{
 
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-gray-700/50 transition-colors duration-150';
-
-            const systemNetworks = ['bridge', 'host', 'none'];
             
             let subnetInfo = '<span class="text-gray-500">-</span>';
             if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
@@ -607,9 +622,12 @@ class NetworkManager{
 
             return `
             <tr class="hover:bg-gray-700/50 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-white">${network.name}</div>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[200px]">
+                    <div class="truncate">${network.name}</div>
                     <div class="text-xs text-gray-500 font-mono">${network.id.substring(0, 12)}</div>
+                    <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute left-4 -top-3 z-50 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-xl pointer-events-none">
+                        ${network.name}
+                    </div>  
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
@@ -649,6 +667,23 @@ class NetworkManager{
                 console.log(`Network ${name} deleted successfully`);
                 await this.loadNetworks();
 
+            } catch (error) {
+                throw error;
+            }
+        });
+    }
+
+    disconnectContainer(networkId, containerId, containerName) {
+        const message = `Are you sure you want to disconnect container "${containerName}" from this network?`;
+        showDeleteConfirmation(message, async () => {
+            try {
+                await apiManager.post(`/api/networks/${networkId}/disconnect`, { containerId });
+                console.log(`Container ${containerName} disconnected successfully`);
+                await this.loadNetworks();
+
+                if (typeof containerManager !== 'undefined') {
+                    containerManager.loadContainers();
+                }
             } catch (error) {
                 throw error;
             }
