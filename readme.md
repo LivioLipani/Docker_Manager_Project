@@ -134,6 +134,7 @@ Before running this application, ensure you have the following installed:
 - `POST /api/networks` - Create a new network
 - `DELETE /api/networks/:id` - Remove a network
 - `POST /:id/connect` - connect a network to a container
+- `POST /:id/diconnect` - diconnect a container to a network
 
 ### Compose
 - `GET /api/stacks` - List all Stacks(compose)
