@@ -50,7 +50,7 @@ Before running this application, ensure you have the following installed:
 
 ## Docker Engine Integration
 
-This project using **[Dockerode](https://github.com/apocas/dockerode)**, a robust Node.js library, to interact directly with the Docker Remote API.
+This project uses **[Dockerode](https://github.com/apocas/dockerode)**, a robust Node.js library, to interact directly with the Docker Remote API.
 Instead of spawning child processes to execute CLI shell commands (e.g., `exec('docker ps')`), Dockerode establishes a direct connection to the Docker Daemon via the UNIX socket (`/var/run/docker.sock`).
 
 ### Usage
