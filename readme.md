@@ -12,6 +12,7 @@ A web-based Docker management application that provides real-time monitoring and
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socketdotio&logoColor=white)
+![Dockerode](https://img.shields.io/badge/Dockerode-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
@@ -46,6 +47,17 @@ Before running this application, ensure you have the following installed:
 - [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0 or higher)
 - [Node.js](https://nodejs.org/) (version 16 or higher)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
+
+## Docker Engine Integration
+
+This project using **[Dockerode](https://github.com/apocas/dockerode)**, a robust Node.js library, to interact directly with the Docker Remote API.
+Instead of spawning child processes to execute CLI shell commands (e.g., `exec('docker ps')`), Dockerode establishes a direct connection to the Docker Daemon via the UNIX socket (`/var/run/docker.sock`).
+
+### Usage
+* Input options are directly passed to Docker. Check **[Docker API documentation](https://docs.docker.com/reference/api/engine/version/v1.52/)** for more details.
+* Return values are unchanged from Docker, official Docker documentation will also apply to them.
+* Check the tests and examples folder for more examples.
+
 
 ## Setup Instructions
 
