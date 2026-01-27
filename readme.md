@@ -1,6 +1,6 @@
 # Docker Manager
 
-A web-based Docker management application that provides real-time monitoring and control of Docker containers, images, and volumes through an intuitive dashboard interface.
+A web-based Docker management application that provides real-time monitoring and control of Docker containers, images, volumes, network and compose through an intuitive dashboard interface.
 
 <p align="center">
   <img src="img/image.png" alt="Dashboard Docker Manager">
