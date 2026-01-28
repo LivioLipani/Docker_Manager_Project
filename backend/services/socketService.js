@@ -12,16 +12,13 @@ class SocketService{
         this.setupEventHandlers();
     }
 
-    //middlware socketio
     setupAuthentication(){
         this.io.use(async (socket, next) => {
             try {
-                //controlla se esiste un token
                 const token = socket.handshake.auth.token;
                 if (!token) {
                     return next(new Error('Authentication error'));
                 }
-                //verifica il token
                 const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
                 const user = await User.findById(decoded.userId);
 
@@ -30,7 +27,6 @@ class SocketService{
                 }
 
                 socket.user = user;
-                //salvo gli utenti connessi in una mappa chiave valore
                 this.authenticatedSockets.set(socket.id, user);
                 next();
             } catch (error) {

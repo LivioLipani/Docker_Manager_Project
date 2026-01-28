@@ -23,9 +23,7 @@ const pullImage = async (req, res) => {
         }
 
         const stream = await DockerService.pullImage(imageName, (event) => {
-            // Controllo errore specifico dentro il JSON di Docker
             if (event.error) {
-                // Se Docker manda un errore nel JSON, lo giriamo al frontend
                 res.write(JSON.stringify({ error: event.error }) + '\n');
             } else {
                 res.write(JSON.stringify(event) + '\n');
@@ -37,7 +35,6 @@ const pullImage = async (req, res) => {
     } catch (error) {
         console.error('Pull image error:', error.statusCode);
         
-        // Se non abbiamo ancora inviato nulla, mandiamo un errore JSON standard
         if (!res.headersSent) {
             if(error.statusCode == 404) res.status(404).json({ error: 404});
             if(error.statusCode == 500) res.status(500).json({ error: 500});

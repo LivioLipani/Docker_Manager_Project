@@ -81,7 +81,6 @@ loginForm.addEventListener("submit", async function (e) {
             
             changeView("home-view", "app-container");
 
-            //connect the socket
             socketManager.connect();
             chartManager.init(); 
         }else{
@@ -121,7 +120,6 @@ registerForm.addEventListener("submit", async function (e) {
             
             changeView("home-view", "app-container");
 
-            //connect the socket
             socketManager.connect();
             chartManager.init();
         } else {
@@ -156,7 +154,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (token) {
         try {
-            // Verifica se il token è ancora valido
             const response = await fetch('/api/auth/verify_token', {
                 method: 'POST',
                 headers: {
@@ -167,13 +164,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 const data = await response.json();
                 if (data.valid) {
-                    // Token valido, reindirizza alla dashboard
                     socketManager.connect();
                     changeView("home-view", "app-container");
                     chartManager.init(); 
                 }
             } else {
-                // Token non valido o scaduto, rimuovilo
                 AuthManager.removeToken();
             }
         } catch (error) {

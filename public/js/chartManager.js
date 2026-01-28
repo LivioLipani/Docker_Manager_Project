@@ -148,7 +148,6 @@ class ChartManager{
         const netEl = document.getElementById('total-networks');
         if (netEl) netEl.textContent = stats.networks || 0;
 
-        //update container status first chart
         if (this.containerStatusChart) {
             this.containerStatusChart.data.datasets[0].data = [
                 statusCounts.running,
@@ -159,7 +158,6 @@ class ChartManager{
             this.containerStatusChart.update('none');
         }
 
-        //update system Resource second chart
         if (this.systemResourcesChart && stats.resources) {
             const cpuUsage = stats.resources.cpu_percent || 0;
             const memoryUsage = stats.resources.memory_percent || 0;

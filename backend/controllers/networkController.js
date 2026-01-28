@@ -53,7 +53,7 @@ const createNetwork = async (req, res) => {
 };
 
 const connectContainer = async (req, res) => {
-    const { id } = req.params; // ID Network
+    const { id } = req.params; 
     const { containerId } = req.body;
 
     if (!containerId) {

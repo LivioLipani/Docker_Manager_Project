@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleIcon.classList.remove('fa-chevron-left');
             toggleIcon.classList.add('fa-chevron-right');
 
+            toggleBtn.classList.remove('m-2');
+
         } else {
             sidebar.classList.remove('w-20');
             sidebar.classList.add('w-64');
@@ -36,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.classList.add('px-3');
                 link.classList.remove('justify-center', 'px-0');
             });
-            
+
             sidebarTexts.forEach(text => {
                 text.classList.remove('hidden');
                     
@@ -49,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
             toggleIcon.classList.remove('fa-chevron-right');
             toggleIcon.classList.add('fa-chevron-left');
+
+            toggleBtn.classList.add('m-2');
         }
     });
 });
