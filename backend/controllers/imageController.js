@@ -1,6 +1,5 @@
 const DockerService = require('../services/dockerService');
 
-
 const getImages = async (_, res) => {
     try {
         const images = await DockerService.getImages();
