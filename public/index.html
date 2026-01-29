@@ -110,7 +110,6 @@
         
 
         <div id="app-container" class="hidden fixed inset-0 flex flex-row overflow-hidden">
-            
             <nav id="sidebar" class="w-64 flex-shrink-0 flex flex-col bg-gray-800 border-r border-gray-700 h-full">
                 <div class="h-24 px-4 flex items-center justify-between flex-shrink-0 overflow-hidden">
                     <div class="flex items-center justify-center min-w-[3rem]"> <i class="fab fa-docker text-3xl text-blue-500"></i></div>
@@ -178,9 +177,9 @@
 
             <main class="flex-1 flex flex-col h-full bg-gray-900 relative min-w-0">
 
-                <div class="flex-1 overflow-y-auto p-12 md:p-14" id="main-view-container">
-                    <div id="dashboard-view" class="">
-                        <h1 class="text-3xl font-bold text-white mb-8">Dashboard</h1>
+                <div class="flex-1 overflow-y-auto p-12 md:p-14 md:pt-0" id="main-view-container">
+                    <div id="dashboard-view">
+                        <h1 class="text-2xl h-24 flex items-center font-bold text-white mb-6">Dashboard</h1>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                             <div class="bg-gray-800 overflow-hidden shadow rounded-lg p-5">
                                 <div class="flex items-center">
@@ -255,8 +254,8 @@
                     </div>
 
                     <div id="volumes-view" class="hidden">
-                        <div class="flex justify-between items-center mb-8">
-                            <h1 class="text-3xl font-bold text-white">Volumes</h1>
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl h-24 flex items-center font-bold text-white">Volumes</h1>
                             <button id="create-volume-btn" class="bg-blue-600 cursor-pointer hover:bg-blue-700 pointer px-4 py-2 rounded-md text-sm font-medium">
                                 <i class="fas fa-plus mr-2"></i>Create Volume
                             </button>
@@ -284,8 +283,8 @@
                     </div>
 
                     <div id="containers-view" class="hidden">
-                        <div class="flex justify-between items-center mb-8">
-                            <h1 class="text-3xl font-bold text-white">Containers</h1>
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl h-24 flex items-center font-bold text-white">Containers</h1>
                             <button id="create-container-btn" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
                                 <i class="fas fa-plus mr-2"></i>Create Container
                             </button>
@@ -315,8 +314,8 @@
                     </div>
 
                     <div id="images-view" class="hidden">
-                        <div class="flex justify-between items-center mb-8">
-                            <h1 class="text-3xl font-bold text-white">Images</h1>
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl h-24 flex items-center font-bold text-white">Images</h1>
                             <button id="pull-image-btn" class="bg-blue-600 cursor-pointer hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
                                 <i class="fas fa-download mr-2"></i>Pull Image
                             </button>
@@ -344,8 +343,8 @@
                     </div>
 
                     <div id="networks-view" class="hidden">
-                        <div class="flex justify-between items-center mb-8">
-                            <h1 class="text-3xl font-bold text-white">Networks</h1>
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl h-24 flex items-center font-bold text-white">Networks</h1>
                             <button id="create-network-btn" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors duration-200">
                                 <i class="fas fa-plus mr-2"></i>Create Network
                             </button>
@@ -375,8 +374,8 @@
                     </div>
 
                     <div id="compose-view" class="hidden">
-                        <div class="flex justify-between items-center mb-8">
-                            <h1 class="text-3xl font-bold text-white">Compose Stacks</h1>
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl h-24 flex items-center font-bold text-white">Compose Stacks</h1>
                             <button onclick="showModal('create-stack-modal')" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors duration-200">
                                 <i class="fas fa-plus mr-2"></i>Deploy Stack
                             </button>
