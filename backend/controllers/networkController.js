@@ -123,9 +123,27 @@ const deleteNetwork = async (req, res) => {
     }
 };
 
+const disconnectContainer = async (req, res) => {
+    const { id } = req.params;
+    const { containerId } = req.body;
+
+    if (!containerId) {
+        return res.status(400).json({ message: 'Container ID is required' });
+    }
+
+    try {
+        await DockerService.disconnectContainerFromNetwork(id, containerId);
+        res.status(200).json({ message: 'Container disconnected successfully' });
+    } catch (error) {
+        console.error('Controller Error - disconnectContainer:', error);
+        res.status(500).json({ message: error.message || 'Failed to disconnect container' });
+    }
+};
+
 module.exports = {
     getNetworks,
     createNetwork,
     deleteNetwork,
-    connectContainer
+    connectContainer,
+    disconnectContainer
 };

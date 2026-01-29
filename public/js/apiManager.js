@@ -46,30 +46,22 @@ class ApiManager {
                 throw new Error('Session expired');
             }
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
+                
                 
                 if (response.status === 403) {
-                    throw new Error(errorData.message || 'Permission denied: Admin access required');
+                    throw new Error(data.message || 'Permission denied: Admin access required');
                 }
                 
                 if (response.status === 404) {
                     throw new Error('Resource not found');
                 }
 
-                if (response.status === 409) {
-                    throw new Error(errorData.message || 'Conflict: Resource is currently in use');
-                }
-
-                throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
-            }
-            
-            if (response.status === 204) {
-                console.log('Deleted successfully (No Content)');
-                return { success: true };
+                throw new Error(data.message);
             }
 
-            const data = await response.json();
             console.log('Deleted successfully:', data);
             return data;
             
@@ -95,6 +87,8 @@ class ApiManager {
                 },
                 body: JSON.stringify(sentData)
             });
+
+            const data = await response.json();
             
             if (!response.ok) {
                 if (response.status === 403) {
@@ -106,20 +100,14 @@ class ApiManager {
                     window.location.href = '/login';
                     throw new Error('Unauthorized');
                 }
-
-                if (response.status === 404) {
-                    throw new Error("Image not found");
-                }
-                
-                throw new Error(error || 'Failed to create');
+                console.log(data);
+                throw new Error(data.message);
             }
             
-            const data = await response.json();
             console.log('created successfully:', data);
             return data;
             
         } catch (error) {
-            console.error('Error:', error.message);
             throw error;
         }
     };

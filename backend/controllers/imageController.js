@@ -36,8 +36,8 @@ const pullImage = async (req, res) => {
         console.error('Pull image error:', error.statusCode);
         
         if (!res.headersSent) {
-            if(error.statusCode == 404) res.status(404).json({ error: 404});
-            if(error.statusCode == 500) res.status(500).json({ error: 500});
+            if(error.statusCode == 404) res.status(404).json({ error: 404, message: "Error: image not found"});
+            if(error.statusCode == 500) res.status(500).json({ error: 500, message: "Error: internal server error"});
         } else {
             res.end();
         }
@@ -47,16 +47,18 @@ const pullImage = async (req, res) => {
 const removeImage = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Admin access required to remove images' });
+            return res.status(403).json({ message: 'Admin access required to remove images' });
         }
 
         const { id } = req.params;
         const { force } = req.query;
         const result = await DockerService.removeImage(id, force === 'true');
+
         res.json(result);
     } catch (error) {
         console.error('Remove image error:', error);
-        res.status(500).json({ error: 'Failed to remove image' });
+        if(error.message.includes('409')) res.status(409).json({ message: "Error: the image is currently used by a running container" });
+        else res.status(500).json({ message: error.message });
     }
 };
 

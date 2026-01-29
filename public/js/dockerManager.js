@@ -7,6 +7,7 @@ let pendingDeleteAction = null;
 function showDeleteConfirmation(message, onConfirm) {
     document.getElementById('delete-confirmation-message').textContent = message;
     document.getElementById('delete-confirmation-modal').classList.remove('hidden');
+    document.getElementById('error-deleteConf').classList.add('hidden');
 
     pendingDeleteAction = onConfirm;
 
@@ -17,11 +18,16 @@ function showDeleteConfirmation(message, onConfirm) {
 
 function closeDeleteConfirmation() {
     document.getElementById('delete-confirmation-modal').classList.add('hidden');
-    document.getElementById('error-message-deleteConf').innerHTML = "";
+    document.getElementById('error-message-deleteConf').classList.add('hidden');
     pendingDeleteAction = null;
 }
 
 async function executeDelete() {
+    const errorEl = document.getElementById('error-deleteConf');
+    const errorText = document.getElementById('error-deleteConf-text');
+
+    errorEl.classList.add("hidden");
+
     if (pendingDeleteAction) {
         const confirmBtn = document.getElementById('confirm-delete-btn');
         const originalContent = confirmBtn.innerHTML;
@@ -33,7 +39,8 @@ async function executeDelete() {
             closeDeleteConfirmation();
         } catch (error) {
             console.error('Delete action failed:', error);
-            document.getElementById('error-message-deleteConf').innerHTML = error.message;
+            errorText.textContent = error.message;
+            errorEl.classList.remove('hidden');
         } finally {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalContent;
@@ -65,7 +72,14 @@ class VolumesManager {
 
         tbody.innerHTML = volumes.map(volume => `
             <tr class="hover:bg-gray-700">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${volume.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
+                    <div class="truncate">
+                        ${volume.name}
+                    </div>
+                    <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute left-4 -top-3 z-50 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-xl pointer-events-none">
+                        ${volume.name}
+                    </div>  
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${volume.driver}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[256px]">
                     <div class="truncate">
@@ -391,6 +405,8 @@ class ContainerManager{
         const formData = new FormData(e.target);
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        const errorEl = document.getElementById('create-container-error');
+        const errorText = document.getElementById('create-container-error-text');
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Container...';
@@ -433,8 +449,9 @@ class ContainerManager{
             this.loadContainers();
             
         } catch (error) {
-            console.error('Failed to create container: ' + error.message);
-            document.getElementById('error-create-container').innerHTML = `Failed to create container: ${error.message}`;
+            console.error('Failed to create container: ' + error);
+            errorText.textContent = `Failed to create container: ${error.message}`;
+            errorEl.classList.remove('hidden');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -538,8 +555,49 @@ class NetworkManager{
             const subnet = ipConfig.Subnet || 'N/A';
             const gateway = ipConfig.Gateway || '';
 
+            const containersMap = network.containers || {};
+            const containerKeys = Object.keys(containersMap);
+
+            let containersHtml = '';
             const systemNetworks = ['bridge', 'host', 'none'];
+
+            if (containerKeys.length === 0) {
+                    containersHtml = '<span class="text-xs text-gray-600 italic">No containers</span>';
+            } else {
+                containersHtml = containerKeys.map(key => {
+                    const containerInfo = containersMap[key];
+                    const cleanName = containerInfo.Name ? containerInfo.Name.replace(/^\//, '') : key.substring(0, 12);
+
+                    const disconnectBtn =`
+                        <button id='diconnect-btn' onclick="event.stopPropagation(); networksManager.disconnectContainer('${network.id}', '${key}', '${cleanName}')" 
+                            class="ml-1 text-blue-300 hover:text-red-400 focus:outline-none transition-colors" 
+                            title="Disconnect ${cleanName}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                        
+                    return `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-200 border border-blue-800 mr-1 mb-1">
+                            <i class="fas fa-box mr-1 opacity-50"></i>
+                            ${cleanName}
+                            ${disconnectBtn}
+                        </span>
+                    `;
+                }).join('');
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-700/50 transition-colors duration-150';
             
+            let subnetInfo = '<span class="text-gray-500">-</span>';
+            if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
+                const config = network.IPAM.Config[0];
+                subnetInfo = `
+                    <div class="text-sm text-gray-300">${config.Subnet || '-'}</div>
+                    <div class="text-xs text-gray-500">${config.Gateway || ''}</div>
+                `;
+            }
+
             const ipInfo = gateway 
                 ? `${subnet} <br> <span class="text-xs text-gray-500">${gateway}</span>` 
                 : subnet;
@@ -564,14 +622,22 @@ class NetworkManager{
 
             return `
             <tr class="hover:bg-gray-700/50 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-white">${network.name}</div>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 relative group max-w-[200px]">
+                    <div class="truncate">${network.name}</div>
                     <div class="text-xs text-gray-500 font-mono">${network.id.substring(0, 12)}</div>
+                    <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute left-4 -top-3 z-50 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-xl pointer-events-none">
+                        ${network.name}
+                    </div>  
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                         ${network.driver}
                     </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex flex-wrap max-w-xs">
+                        ${containersHtml}
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     ${network.scope}
@@ -602,13 +668,23 @@ class NetworkManager{
                 await this.loadNetworks();
 
             } catch (error) {
-                const errorMsg = error.message || 'Unknown error';
+                throw error;
+            }
+        });
+    }
 
-                if (errorMsg.includes('409')) {
-                    document.getElementById('error-message-deleteConf').innerHTML = 'Cannot delete network: It is currently in use by active containers. Please disconnect them first.';
-                } else {
-                    document.getElementById('error-message-deleteConf').innerHTML = `Failed to delete network: ${errorMsg}`;
+    disconnectContainer(networkId, containerId, containerName) {
+        const message = `Are you sure you want to disconnect container "${containerName}" from this network?`;
+        showDeleteConfirmation(message, async () => {
+            try {
+                await apiManager.post(`/api/networks/${networkId}/disconnect`, { containerId });
+                console.log(`Container ${containerName} disconnected successfully`);
+                await this.loadNetworks();
+
+                if (typeof containerManager !== 'undefined') {
+                    containerManager.loadContainers();
                 }
+            } catch (error) {
                 throw error;
             }
         });
@@ -620,6 +696,8 @@ class NetworkManager{
         const formData = new FormData(form);
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        const errorEl = document.getElementById('network-error');
+        const errorText = document.getElementById('network-error-text');
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
@@ -680,7 +758,8 @@ class NetworkManager{
 
         } catch (error) {
             console.error('Failed to create network: ' + error.message);
-            document.getElementById('network-error').innerHTML = `Failed to create network: ${error.message}`;
+            errorText.textContent = `Failed to create network: ${error.message}`;
+            errorEl.classList.remove("hidden");
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -692,7 +771,7 @@ class NetworkManager{
         const nameDisplay = document.getElementById('connect-network-name-display');
         const idInput = document.getElementById('connect-network-id');
         const select = document.getElementById('connect-container-select');
-        document.getElementById("error-network-connect").innerHTML = "";
+        document.getElementById('network-connect-error').classList.add("hidden");
 
         nameDisplay.textContent = networkName;
         idInput.value = networkId;
@@ -724,13 +803,14 @@ class NetworkManager{
     }
 
     async handleConnectContainer(e) {
+        const errorEl = document.getElementById('network-connect-error');
+        const errorText = document.getElementById('network-connect-error-text');
         e.preventDefault();
         
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Connecting...';
-        const errorAllert = document.getElementById("error-network-connect"); 
 
         const formData = new FormData(e.target);
         const networkId = formData.get('networkId');
@@ -749,14 +829,15 @@ class NetworkManager{
             const msg = error.message || 'Unknown error';
 
             if (msg.includes('409') || msg.includes('already connected')) {
-                errorAllert.innerHTML = "Error: This container is already connected to this network."
+                errorText.textContent = "Error: This container is already connected to this network.";
             } 
             else if (msg.includes('Network not found')) {
-                errorAllert.innerHTML = "Error: This network no longer exists.";
+                errorText.textContent = "Error: This network no longer exists.";
             } 
             else {
-                errorAllert.innerHTML = `Failed to connect: ${msg}`
+                errorText.textContent = `Failed to connect: ${msg}`;
             }
+            errorEl.classList.remove("hidden");
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
@@ -816,7 +897,7 @@ class ComposeManager{
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <button onclick="stackManager.removeStack('${stack.name}')" 
+                    <button onclick="composeManager.removeStack('${stack.name}')" 
                         class="cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-200"
                         title="Stop & Remove Stack">
                         <i class="fas fa-trash-alt"></i>
@@ -825,6 +906,64 @@ class ComposeManager{
             </tr>
             `;
         }).join('');
+    }
+
+    async handleDeploy(e) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        const errorEl = document.getElementById('stack-error');
+        const errorText = document.getElementById('stack-error-text');
+
+        errorEl.classList.add('hidden');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deploying...';
+
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('name'),
+            content: formData.get('content')
+        };
+
+        try {
+            await apiManager.post('/api/stacks', data);
+            
+            console.log('Stack deployed successfully');
+            closeModal('create-stack-modal', 'create-stack-form');
+            
+            this.loadStacks();
+            containerManager.loadContainers();
+            networksManager.loadNetworks();
+            volumesManager.loadVolumes();
+
+        } catch (error) {
+            console.error('Deployment failed:', error.message);
+            
+            errorText.textContent = error.message;
+            errorEl.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    removeStack(name) {
+        const message = `Are you sure you want to delete stack "${name}"? \n\nThis will execute 'docker compose down' removing all containers and networks associated with this stack.`;
+
+        showDeleteConfirmation(message, async () => {
+            try {
+                await apiManager.remove(`/api/stacks/${name}`);
+                console.log(`Stack ${name} removed`);
+                
+                await this.loadStacks();
+                if (typeof containerManager !== 'undefined') containerManager.loadContainers();
+            
+            } catch (error) {
+                throw new Error(`Failed to remove stack: ${error.message}`);
+            }
+        });
     }
 }
 
