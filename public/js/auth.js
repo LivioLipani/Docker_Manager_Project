@@ -151,7 +151,6 @@ logoutBtn.addEventListener('click', () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = AuthManager.getToken();
-
     if (token) {
         try {
             const response = await fetch('/api/auth/verify_token', {
